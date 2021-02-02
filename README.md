@@ -28,6 +28,7 @@ Current grid size:
 | Transformer with Core  |   |
 | 3 terminal OpAmp  | o  |
 | 5 terminal OpAmp  |   |
+| Normally Open Switch  | s  |
 
 
 Copy output to clipboard shortcut:
