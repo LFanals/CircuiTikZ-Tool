@@ -5,6 +5,9 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
 
+import java.awt.Graphics2D; // added
+import java.awt.geom.Point2D; // 2D added
+
 /**
  * Component is meant to be a data object for storing all possible component
  * objects in a single arrayList inside of the class CircuitMaker. For that
@@ -16,10 +19,10 @@ import java.awt.Polygon;
 public class Component {
 
     //path specific placement variables
-    Point wireStart, wireEnd;
+    Point2D wireStart, wireEnd;
 
     //non path placement variables
-    Point position;
+    Point2D position;
 
     String latexParameters = "";          //stores the string which ultimately ends up in the LaTeX output, this is the variable a user modifies when they change the "Component String" field in the UI
     String Label = "";                    //User defined label that is displayed as "Component Label" in UI, meant for the user to help organize their schematic as it suits them
@@ -104,7 +107,7 @@ public class Component {
      * @param componentSelected component selected, consult constant values
      * above for valid non-path components.
      */
-    public Component(Point position, int componentSelected) {
+    public Component(Point2D position, int componentSelected) {
         this.position = position;                                //pass the input parameter to the object
 
         /* Depending on the component selected we need to initalize the string parameter's such that the latex output is correct
@@ -160,8 +163,8 @@ public class Component {
                 //original template string, however we have to treat them differently in the latex output
                 //and in the drawing
                 deviceID = OpAmpCounter++;
-                latexParameters = "node[op amp,scale=2.04] (opamp" + deviceID + ") {}";
-                Label = "3-Term Opamp";
+                latexParameters = "node[op amp,scale=1.19] (opamp" + deviceID + ") {}"; // mod
+                Label = "3T OpAmp";
                 break;
             case OPAMP_5TERMINAL:
                 deviceID = OpAmpCounter++;
@@ -206,7 +209,7 @@ public class Component {
      * @param componentSelected desired PATH component to be created, see
      * constants at the top of this class for acceptable values
      */
-    public Component(Point wireStart, Point wireEnd, int componentSelected) {
+    public Component(Point2D wireStart, Point2D wireEnd, int componentSelected) {
         //pass start and end positions of the wire to the object
         this.wireStart = wireStart;
         this.wireEnd = wireEnd;
@@ -260,8 +263,8 @@ public class Component {
     public static Component getComponentFromXML(String xml) {
         if (getDataFromXMLTag(xml, "pathComponent").equals("true")) {
             Component ret = new Component(
-                    new Point(Integer.parseInt(getDataFromXMLTag(xml, "start-x")), Integer.parseInt(getDataFromXMLTag(xml, "start-y"))),
-                    new Point(Integer.parseInt(getDataFromXMLTag(xml, "end-x")), Integer.parseInt(getDataFromXMLTag(xml, "end-y"))),
+                    new Point2D.Double(Double.parseDouble(getDataFromXMLTag(xml, "start-x")), Double.parseDouble(getDataFromXMLTag(xml, "start-y"))),
+                    new Point2D.Double(Double.parseDouble(getDataFromXMLTag(xml, "end-x")), Double.parseDouble(getDataFromXMLTag(xml, "end-y"))),
                     Integer.parseInt(getDataFromXMLTag(xml, "type"))
             );
             ret.setLatexString(getDataFromXMLTag(xml, "latexParameters"));
@@ -269,7 +272,7 @@ public class Component {
             return ret;
         } else {
             Component ret = new Component(
-                    new Point(Integer.parseInt(getDataFromXMLTag(xml, "position-x")), Integer.parseInt(getDataFromXMLTag(xml, "position-y"))),
+                    new Point2D.Double(Double.parseDouble(getDataFromXMLTag(xml, "position-x")), Double.parseDouble(getDataFromXMLTag(xml, "position-y"))),
                     Integer.parseInt(getDataFromXMLTag(xml, "type"))
             );
             ret.setLatexString(getDataFromXMLTag(xml, "latexParameters"));
@@ -293,14 +296,14 @@ public class Component {
         String ret = "<component>";
         if (pathComponent) {
             ret += "<pathComponent>true</pathComponent>";
-            ret += "<start-x>" + wireStart.x + "</start-x>";
-            ret += "<start-y>" + wireStart.y + "</start-y>";
-            ret += "<end-x>" + wireEnd.x + "</end-x>";
-            ret += "<end-y>" + wireEnd.y + "</end-y>";
+            ret += "<start-x>" + wireStart.getX() + "</start-x>";
+            ret += "<start-y>" + wireStart.getY() + "</start-y>";
+            ret += "<end-x>" + wireEnd.getX() + "</end-x>";
+            ret += "<end-y>" + wireEnd.getY() + "</end-y>";
         } else {
             ret += "<pathComponent>false</pathComponent>";
-            ret += "<position-x>" + position.x + "</position-x>";
-            ret += "<position-y>" + position.y + "</position-y>";
+            ret += "<position-x>" + position.getX() + "</position-x>";
+            ret += "<position-y>" + position.getY() + "</position-y>";
         }
         ret += "<type>" + componentType + "</type>";
         ret += "<label>" + Label + "</label>";
@@ -337,7 +340,7 @@ public class Component {
      */
     public static boolean isPathComponent(int componentIndex) {
         try {
-            Component c = new Component(new Point(0, 0), new Point(0, 0), componentIndex);
+            Component c = new Component(new Point2D.Double(0, 0), new Point2D.Double(0, 0), componentIndex);
             return true;
         } catch (IllegalArgumentException e) {
             return false;
@@ -352,19 +355,19 @@ public class Component {
      * is selected (selected components are highlighted in a different color in
      * the schematicWindow)
      *
-     * @param g Graphics object for the components to be draw onto
+     * @param g2d Graphics object for the components to be draw onto
      * @param gridSize current gridSize of the graphics object, this variable
      * allows for the components to scale relatively
      * @param offset current offset of the grid which is changed when the user
      * pans around the schematic
      * @param selected whether or not this component is currently selected
      */
-    public void paint(Graphics g, int gridSize, Point offset, boolean selected) {
+    public void paint(Graphics g2d, double gridSize, Point2D offset, boolean selected) {
         //if a component is selected we should set its color differently. 
         if (selected) {
-            g.setColor(Preferences.selectedColor);
+            g2d.setColor(Preferences.selectedColor);
         } else {
-            g.setColor(Preferences.componentColor);
+            g2d.setColor(Preferences.componentColor);
         }
 
         /*
@@ -374,25 +377,25 @@ public class Component {
         components vary a lot so we need to handle them individually 
          */
         if (pathComponent) {
-            g.drawLine(
-                    gridSize * (wireStart.x + offset.x),
-                    gridSize * (wireStart.y + offset.y),
-                    gridSize * (wireEnd.x + offset.x),
-                    gridSize * (wireEnd.y + offset.y)
+            g2d.drawLine(
+                  (int)  (gridSize * (wireStart.getX() + offset.getX())),
+                  (int)  (gridSize * (wireStart.getY() + offset.getY())),
+                  (int)  (gridSize * (wireEnd.getX() + offset.getX())),
+                  (int)  (gridSize * (wireEnd.getY() + offset.getY()))
             );
         } else if (componentType == VCC_NODE) {
-            drawVCCNode(g, gridSize, position.x + offset.x, position.y + offset.y);
+            drawVCCNode(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY());
         } else if (componentType == GROUND_NODE) {
-            drawGNDNode(g, gridSize, position.x + offset.x, position.y + offset.y);
+            drawGNDNode(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY());
         } else if (componentType == VSS_NODE) {
-            drawVSSNode(g, gridSize, position.x + offset.x, position.y + offset.y);
+            drawVSSNode(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY());
         } else if (componentType == OPAMP_3TERMINAL || componentType == OPAMP_5TERMINAL) {
-            drawOpamp(g, gridSize, position.x + offset.x, position.y + offset.y, selected, componentType);
+            drawOpamp(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected, componentType);
         } else if (componentType == TRANSFORMER || componentType == TRANSFORMER_WITH_CORE) {
-            drawTransformer(g, gridSize, position.x + offset.x, position.y + offset.y, selected);
+            drawTransformer(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
         } else {
             //if it's not any of those then it's a three terminal transistor so we just draw the transistor
-            drawTransistor(g, gridSize, position.x + offset.x, position.y + offset.y, selected);
+            drawTransistor(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
         }
 
         /*
@@ -403,8 +406,8 @@ public class Component {
                 then we draw the string
          */
         int fontSize = 10;
-        g.setFont(new Font("Dialog", Font.PLAIN, fontSize));
-        Point labelPosition;
+        g2d.setFont(new Font("Dialog", Font.PLAIN, fontSize));
+        Point2D labelPosition;
 
         /*            if the component we're drawing is a path component then we want to place the label right on the midpoint
         otherwise we can just place it at the position of the component.        
@@ -412,43 +415,43 @@ public class Component {
         gridSize
          */
         if (isPathComponent()) {
-            labelPosition = new Point(
-                    ((int) wireStart.getX() * gridSize + (int) wireEnd.getX() * gridSize) / 2,
-                    ((int) wireStart.getY() * gridSize + (int) wireEnd.getY() * gridSize) / 2
+            labelPosition = new Point2D.Double(
+                    ( wireStart.getX() * gridSize + wireEnd.getX() * gridSize) / 2,
+                    ( wireStart.getY() * gridSize + wireEnd.getY() * gridSize) / 2
             );
         } else if (componentType == VCC_NODE) {
             //vcc nodes have the label above the drawn component
-            labelPosition = new Point(position.x * gridSize, position.y * gridSize - 2 * gridSize / 3);
+            labelPosition = new Point2D.Double(position.getX() * gridSize, position.getY() * gridSize - 2 * gridSize / 3);
         } else if (componentType == GROUND_NODE || componentType == VSS_NODE) {
             //VSS and GND nodes have the label displayed below the component
-            labelPosition = new Point(position.x * gridSize, position.y * gridSize + 2 * gridSize / 3);
+            labelPosition = new Point2D.Double(position.getX() * gridSize, position.getY() * gridSize + 2 * gridSize / 3);
         } else {
             //if the component doesn't need any special label placement and isn't a pathing component
             //then we can just place the label directly on the position of the component
-            labelPosition = new Point(position.x * gridSize, position.y * gridSize);
+            labelPosition = new Point2D.Double(position.getX() * gridSize, position.getY() * gridSize);
         }
 
         //calculate width of the string itself
-        int stringWidth = g.getFontMetrics().stringWidth(Label);
+        int stringWidth = g2d.getFontMetrics().stringWidth(Label);
 
         //padding of the label (how many pixels of black space around the text before the border) 
         int boxPadding = 3;
 
         //create bounding box for the string
-        g.setColor(Preferences.backgroundColor);
-        g.fillRect((int) labelPosition.getX() + offset.x * gridSize - stringWidth / 2 - boxPadding, (int) labelPosition.getY() + offset.y * gridSize + 2 - fontSize - boxPadding, stringWidth + boxPadding * 2, fontSize + boxPadding * 2);
+        g2d.setColor(Preferences.backgroundColor);
+        g2d.fillRect((int) (labelPosition.getX() + offset.getX() * gridSize - stringWidth / 2 - boxPadding), (int) (labelPosition.getY() + offset.getY() * gridSize + 2 - fontSize - boxPadding), stringWidth + boxPadding * 2, fontSize + boxPadding * 2);
 
         if (selected) {
-            g.setColor(Preferences.selectedColor);
+            g2d.setColor(Preferences.selectedColor);
         } else {
-            g.setColor(Preferences.componentColor);
+            g2d.setColor(Preferences.componentColor);
         }
 
         //create white border around label so it pops a little better
-        g.setColor(Preferences.componentColor);
-        g.drawRect((int) labelPosition.getX() + offset.x * gridSize - stringWidth / 2 - boxPadding, (int) labelPosition.getY() + offset.y * gridSize + 2 - fontSize - boxPadding, stringWidth + boxPadding * 2, fontSize + boxPadding * 2);
+        g2d.setColor(Preferences.componentColor);
+        g2d.drawRect((int) (labelPosition.getX() + offset.getX() * gridSize - stringWidth / 2 - boxPadding), (int) (labelPosition.getY() + offset.getY() * gridSize + 2 - fontSize - boxPadding), stringWidth + boxPadding * 2, fontSize + boxPadding * 2);
         //draw label string
-        g.drawString(Label, (int) labelPosition.getX() + offset.x * gridSize - stringWidth / 2, (int) labelPosition.getY() + offset.y * gridSize + 2);
+        g2d.drawString(Label, (int) (labelPosition.getX() + offset.getX() * gridSize - stringWidth / 2), (int) (labelPosition.getY() + offset.getY() * gridSize + 2));
     }
 
     /**
@@ -503,7 +506,7 @@ public class Component {
      * @return starting coordinate (in circuitikz coordinates) of the current
      * path component
      */
-    public Point getStart() {
+    public Point2D getStart() {
         if (pathComponent) {
             return wireStart;
         } else {
@@ -518,7 +521,7 @@ public class Component {
      * @return starting coordinate (in circuitikz coordinates) of the current
      * path component
      */
-    public Point getEnd() {
+    public Point2D getEnd() {
         if (pathComponent) {
             return wireEnd;
         } else {
@@ -526,7 +529,7 @@ public class Component {
         }
     }
 
-    public Point getPosition() {
+    public Point2D getPosition() {
         if (pathComponent) {
             throw new IllegalStateException();
         } else {
@@ -544,12 +547,12 @@ public class Component {
         if (isPathComponent()) {
             String retString = "";
             retString += Label + " ";
-            retString += "[" + wireStart.x + "," + wireStart.y + "] to [" + wireEnd.x + "," + wireEnd.y + "]";
+            retString += "[" + wireStart.getX() + "," + wireStart.getY() + "] to [" + wireEnd.getX() + "," + wireEnd.getY() + "]";
             return retString;
         } else {
             String retString = "";
             retString += Label + " ";
-            retString += "[" + position.x + "," + position.y + "] ";
+            retString += "[" + position.getX() + "," + position.getY() + "] ";
             return retString;
         }
     }
@@ -566,9 +569,9 @@ public class Component {
         //path components are simple, just insert the label between the start and end position. 
         if (isPathComponent()) {
             output += "\\draw (";
-            output += (int) wireStart.getX() + "," + (int) (-1) * (wireStart.getY()) + ") ";
+            output +=  wireStart.getX() + "," +  (-1) * (wireStart.getY()) + ") ";
             output += getLatexString() + " ";
-            output += "(" + (int) getEnd().getX() + "," + (int) (-1) * getEnd().getY() + ");";
+            output += "(" +  getEnd().getX() + "," +  (-1) * getEnd().getY() + ");";
         } else {
 
             /*to deal with multi-terminal and other non-path components we have to consider special cases.             
@@ -578,73 +581,73 @@ public class Component {
             and for the time being this serves most of the functionality at the cost of outputing more code. 
              */
             output += "\\draw (";
-            output += (int) position.getX() + "," + (int) (-1) * (position.getY()) + ") ";
+            output +=  position.getX() + "," +  (-1) * (position.getY()) + ") ";
             output += getLatexString() + ";";
 
             switch (componentType) {
                 case TRANSISTOR_NPN:
                     //breakout the BJT's terminals to fit with the current grid system
-                    output += "\\draw (Q" + deviceID + ".C) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".E) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() + 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".B) to[short] (" + (int) (position.getX() - 1) + "," + (int) (-1) * (position.getY()) + ");";
+                    output += "\\draw (Q" + deviceID + ".C) to[short] (" +  position.getX() + "," +  (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".E) to[short] (" +  position.getX() + "," +  (-1) * (position.getY() + 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".B) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY()) + ");";
                     break;
                 case TRANSISTOR_PNP:
                     //breakout the BJT's terminals to fit with the current grid system
-                    output += "\\draw (Q" + deviceID + ".E) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".C) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() + 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".B) to[short] (" + (int) (position.getX() - 1) + "," + (int) (-1) * (position.getY()) + ");";
+                    output += "\\draw (Q" + deviceID + ".E) to[short] (" + position.getX() + "," + (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".C) to[short] (" + position.getX() + "," +  (-1) * (position.getY() + 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".B) to[short] (" + (position.getX() - 1) + "," +  (-1) * (position.getY()) + ");";
                     break;
                 case NMOS:
                     //breakout the fet's terminals to fit with the current grid system:
-                    output += "\\draw (Q" + deviceID + ".D) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".S) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() + 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".G) to[short] (" + (int) (position.getX() - 1) + "," + (int) (-1) * (position.getY()) + ");";
+                    output += "\\draw (Q" + deviceID + ".D) to[short] (" +  position.getX() + "," +  (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".S) to[short] (" +  position.getX() + "," +  (-1) * (position.getY() + 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".G) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY()) + ");";
                     break;
                 case PMOS:
                     //breakout the fets's terminals to fit with the current grid system:
-                    output += "\\draw (Q" + deviceID + ".S) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".D) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() + 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".G) to[short] (" + (int) (position.getX() - 1) + "," + (int) (-1) * (position.getY()) + ");";
+                    output += "\\draw (Q" + deviceID + ".S) to[short] (" +  position.getX() + "," +  (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".D) to[short] (" +  position.getX() + "," +  (-1) * (position.getY() + 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".G) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY()) + ");";
                     break;
                 case NIGBT:
                     //breakout the IGBT's terminals to fit with the current grid system:
-                    output += "\\draw (Q" + deviceID + ".D) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".S) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() + 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".G) to[short] (" + (int) (position.getX() - 1) + "," + (int) (-1) * (position.getY()) + ");";
+                    output += "\\draw (Q" + deviceID + ".D) to[short] (" +  position.getX() + "," +  (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".S) to[short] (" +  position.getX() + "," +  (-1) * (position.getY() + 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".G) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY()) + ");";
                     break;
                 case PIGBT:
                     //breakout the IGBT's terminals to fit with the current grid system:
-                    output += "\\draw (Q" + deviceID + ".S) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".D) to[short] (" + (int) position.getX() + "," + (int) (-1) * (position.getY() + 1) + ");\n";
-                    output += "\\draw (Q" + deviceID + ".G) to[short] (" + (int) (position.getX() - 1) + "," + (int) (-1) * (position.getY()) + ");";
+                    output += "\\draw (Q" + deviceID + ".S) to[short] (" +  position.getX() + "," +  (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".D) to[short] (" +  position.getX() + "," +  (-1) * (position.getY() + 1) + ");\n";
+                    output += "\\draw (Q" + deviceID + ".G) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY()) + ");";
                     break;
 
                 case TRANSFORMER:
-                    output += "\\draw (T" + deviceID + ".A1) to[short] (" + (int) (position.getX() - 1) + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (T" + deviceID + ".A2) to[short] (" + (int) (position.getX() - 1) + "," + (int) (-1) * (position.getY() + 1) + ");\n";
+                    output += "\\draw (T" + deviceID + ".A1) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (T" + deviceID + ".A2) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY() + 1) + ");\n";
 
-                    output += "\\draw (T" + deviceID + ".B1) to[short] (" + (int) (position.getX() + 1) + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (T" + deviceID + ".B2) to[short] (" + (int) (position.getX() + 1) + "," + (int) (-1) * (position.getY() + 1) + ");";
+                    output += "\\draw (T" + deviceID + ".B1) to[short] (" +  (position.getX() + 1) + "," +  (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (T" + deviceID + ".B2) to[short] (" +  (position.getX() + 1) + "," +  (-1) * (position.getY() + 1) + ");";
 
                     break;
                 case TRANSFORMER_WITH_CORE:
-                    output += "\\draw (T" + deviceID + ".A1) to[short] (" + (int) (position.getX() - 1) + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (T" + deviceID + ".A2) to[short] (" + (int) (position.getX() - 1) + "," + (int) (-1) * (position.getY() + 1) + ");\n";
+                    output += "\\draw (T" + deviceID + ".A1) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (T" + deviceID + ".A2) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY() + 1) + ");\n";
 
-                    output += "\\draw (T" + deviceID + ".B1) to[short] (" + (int) (position.getX() + 1) + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (T" + deviceID + ".B2) to[short] (" + (int) (position.getX() + 1) + "," + (int) (-1) * (position.getY() + 1) + ");";
+                    output += "\\draw (T" + deviceID + ".B1) to[short] (" +  (position.getX() + 1) + "," +  (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (T" + deviceID + ".B2) to[short] (" +  (position.getX() + 1) + "," +  (-1) * (position.getY() + 1) + ");";
 
                     break;
                 case OPAMP_3TERMINAL:
                     //breakout the opamp's terminals to fit with the current grid system:
-                    output += "\n\\draw (opamp" + deviceID + ".-) to[short] (" + (int) (position.getX() - 3) + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (opamp" + deviceID + ".+) to[short] (" + (int) (position.getX() - 3) + "," + (int) (-1) * (position.getY() + 1) + ");";
+                    output += "\n\\draw (opamp" + deviceID + ".-) to[short] (" +  (position.getX() - 1.75) + "," +  (-1) * (position.getY() - 0.5) + ");\n"; // mod
+                    output += "\\draw (opamp" + deviceID + ".+) to[short] (" +  (position.getX() - 1.75) + "," +  (-1) * (position.getY() + 0.5) + ");"; // mod 
 //                    output += "\\draw (opamp" + deviceID + ".out) to[short] (" + (int) (position.getX() +1 ) + "," + (int) (-1) * (position.getY()) + ");";
                     break;
                 case OPAMP_5TERMINAL:
                     //breakout the opamp's terminals to fit with the current grid system:
-                    output += "\n\\draw (opamp" + deviceID + ".-) to[short] (" + (int) (position.getX() - 3) + "," + (int) (-1) * (position.getY() - 1) + ");\n";
-                    output += "\\draw (opamp" + deviceID + ".+) to[short] (" + (int) (position.getX() - 3) + "," + (int) (-1) * (position.getY() + 1) + ");";
+                    output += "\n\\draw (opamp" + deviceID + ".-) to[short] (" +  (position.getX() - 3) + "," +  (-1) * (position.getY() - 1) + ");\n";
+                    output += "\\draw (opamp" + deviceID + ".+) to[short] (" +  (position.getX() - 3) + "," +  (-1) * (position.getY() + 1) + ");";
 //                    output += "\\draw (opamp" + deviceID + ".out) to[short] (" + (int) (position.getX()) + "," + (int) (-1) * (position.getY()) + ");";
                     break;
             }
@@ -657,29 +660,29 @@ public class Component {
      * draws the gndNode at an x and y position (in CircuiTikz coordinates) to
      * the schematic window
      *
-     * @param g graphics object to be drawn onto
+     * @param g2d graphics object to be drawn onto
      * @param gridSize current size of the grid
      * @param xPos x position in circuitikz coordinates
      * @param yPos y position in circuitikz coordinates
      */
-    public static void drawGNDNode(Graphics g, int gridSize, int xPos, int yPos) {
-        g.drawLine(
-                gridSize * xPos - gridSize / 4,
-                gridSize * yPos,
-                gridSize * xPos + gridSize / 4,
-                gridSize * yPos
+    public static void drawGNDNode(Graphics g2d, double gridSize, double xPos, double yPos) {
+        g2d.drawLine(
+              (int)  (gridSize * xPos - gridSize / 4),
+              (int)  (gridSize * yPos),
+              (int)  (gridSize * xPos + gridSize / 4),
+              (int)  (gridSize * yPos)
         );
-        g.drawLine(
-                gridSize * xPos - gridSize / 8,
-                gridSize * yPos + gridSize / 8,
-                gridSize * xPos + gridSize / 8,
-                gridSize * yPos + gridSize / 8
+        g2d.drawLine(
+              (int)  (gridSize * xPos - gridSize / 8),
+              (int)  (gridSize * yPos + gridSize / 8),
+              (int)  (gridSize * xPos + gridSize / 8),
+              (int)  (gridSize * yPos + gridSize / 8)
         );
-        g.drawLine(
-                gridSize * xPos - gridSize / 16,
-                gridSize * yPos + 2 * gridSize / 8,
-                gridSize * xPos + gridSize / 16,
-                gridSize * yPos + 2 * gridSize / 8
+        g2d.drawLine(
+              (int)  (gridSize * xPos - gridSize / 16),
+              (int)  (gridSize * yPos + 2 * gridSize / 8),
+              (int)  (gridSize * xPos + gridSize / 16),
+              (int)  (gridSize * yPos + 2 * gridSize / 8)
         );
     }
 
@@ -687,29 +690,29 @@ public class Component {
      * draws the vss node at an x and y position (in CircuiTikz coordinates) to
      * the schematic window
      *
-     * @param g graphics object to be drawn onto
+     * @param g2d graphics object to be drawn onto
      * @param gridSize current size of the grid
      * @param xPos x position in circuitikz coordinates
      * @param yPos y position in circuitikz coordinates
      */
-    public static void drawVSSNode(Graphics g, int gridSize, int xPos, int yPos) {
-        g.drawLine(
-                gridSize * xPos,
-                gridSize * yPos,
-                gridSize * xPos,
-                gridSize * yPos + gridSize / 3
+    public static void drawVSSNode(Graphics g2d, double gridSize, double xPos, double yPos) {
+        g2d.drawLine(
+              (int)  (gridSize * xPos),
+              (int)  (gridSize * yPos),
+              (int)  (gridSize * xPos),
+              (int)  (gridSize * yPos + gridSize / 3)
         );
-        g.drawLine(
-                gridSize * xPos,
-                gridSize * yPos + gridSize / 3,
-                gridSize * xPos - gridSize / 8,
-                gridSize * yPos + gridSize / 5 - gridSize / 8
+        g2d.drawLine(
+              (int)  (gridSize * xPos),
+              (int)  (gridSize * yPos + gridSize / 3),
+              (int)  (gridSize * xPos - gridSize / 8),
+              (int)  (gridSize * yPos + gridSize / 5 - gridSize / 8)
         );
-        g.drawLine(
-                gridSize * xPos,
-                gridSize * yPos + gridSize / 3,
-                gridSize * xPos + gridSize / 8,
-                gridSize * yPos + gridSize / 5 - gridSize / 8
+        g2d.drawLine(
+              (int)  (gridSize * xPos),
+              (int)  (gridSize * yPos + gridSize / 3),
+              (int)  (gridSize * xPos + gridSize / 8),
+              (int)  (gridSize * yPos + gridSize / 5 - gridSize / 8)
         );
 
     }
@@ -718,29 +721,29 @@ public class Component {
      * draws the vcc Node at an x and y position (in CircuiTikz coordinates) to
      * the schematic window
      *
-     * @param g graphics object to be drawn onto
+     * @param g2d graphics object to be drawn onto
      * @param gridSize current size of the grid
      * @param xPos x position in circuitikz coordinates
      * @param yPos y position in circuitikz coordinates
      */
-    public static void drawVCCNode(Graphics g, int gridSize, int xPos, int yPos) {
-        g.drawLine(
-                gridSize * xPos,
-                gridSize * yPos,
-                gridSize * xPos,
-                gridSize * yPos - gridSize / 3
+    public static void drawVCCNode(Graphics g2d, double gridSize, double xPos, double yPos) {
+        g2d.drawLine(
+              (int)  (gridSize * xPos),
+              (int)  (gridSize * yPos),
+              (int)  (gridSize * xPos),
+              (int)  (gridSize * yPos - gridSize / 3)
         );
-        g.drawLine(
-                gridSize * xPos,
-                gridSize * yPos - gridSize / 3,
-                gridSize * xPos - gridSize / 8,
-                gridSize * yPos - gridSize / 5 + gridSize / 8
+        g2d.drawLine(
+              (int)  (gridSize * xPos),
+              (int)  (gridSize * yPos - gridSize / 3),
+              (int)  (gridSize * xPos - gridSize / 8),
+              (int)  (gridSize * yPos - gridSize / 5 + gridSize / 8)
         );
-        g.drawLine(
-                gridSize * xPos,
-                gridSize * yPos - gridSize / 3,
-                gridSize * xPos + gridSize / 8,
-                gridSize * yPos - gridSize / 5 + gridSize / 8
+        g2d.drawLine(
+              (int)  (gridSize * xPos),
+              (int)  (gridSize * yPos - gridSize / 3),
+              (int)  (gridSize * xPos + gridSize / 8),
+              (int)  (gridSize * yPos - gridSize / 5 + gridSize / 8)
         );
     }
 
@@ -748,61 +751,61 @@ public class Component {
      * draws the transistor at an x and y position (in CircuiTikz coordinates)
      * to the schematic window, must
      *
-     * @param g graphics object to be drawn onto
+     * @param g2d graphics object to be drawn onto
      * @param gridSize current size of the grid
      * @param xPos x position in circuitikz coordinates
      * @param yPos y position in circuitikz coordinates
      * @param selected boolean indicating whether or not the transistor should
      * be drawn as a selected component
      */
-    public static void drawTransistor(Graphics g, int gridSize, int xPos, int yPos, boolean selected) {
+    public static void drawTransistor(Graphics g2d, double gridSize, double xPos, double yPos, boolean selected) {
         if (selected) {
-            g.setColor(Preferences.selectedColor);
+            g2d.setColor(Preferences.selectedColor);
         } else {
-            g.setColor(Preferences.componentColor);
+            g2d.setColor(Preferences.componentColor);
         }
-        g.drawLine(gridSize * xPos, gridSize * yPos, gridSize * xPos, gridSize * yPos - gridSize);
-        g.drawLine(gridSize * xPos, gridSize * yPos, gridSize * xPos, gridSize * yPos + gridSize);
-        g.drawLine(gridSize * xPos, gridSize * yPos, gridSize * xPos - gridSize, gridSize * yPos);
-        g.setColor(Preferences.backgroundColor);
-        g.fillOval(gridSize * xPos - gridSize / 3, gridSize * yPos - gridSize / 3, gridSize * 2 / 3, gridSize * 2 / 3);
+        g2d.drawLine((int) (gridSize * xPos), (int) (gridSize * yPos), (int) (gridSize * xPos), (int) (gridSize * yPos - gridSize));
+        g2d.drawLine((int) (gridSize * xPos), (int) (gridSize * yPos), (int) (gridSize * xPos), (int) (gridSize * yPos + gridSize));
+        g2d.drawLine((int) (gridSize * xPos), (int) (gridSize * yPos), (int) (gridSize * xPos - gridSize), (int) (gridSize * yPos));
+        g2d.setColor(Preferences.backgroundColor);
+        g2d.fillOval((int) (gridSize * xPos - gridSize / 3), (int) (gridSize * yPos - gridSize / 3), (int) (gridSize * 2 / 3), (int) (gridSize * 2 / 3));
         if (selected) {
-            g.setColor(Preferences.selectedColor);
+            g2d.setColor(Preferences.selectedColor);
         } else {
-            g.setColor(Preferences.componentColor);
+            g2d.setColor(Preferences.componentColor);
         }
-        g.drawOval(gridSize * xPos - gridSize / 3, gridSize * yPos - gridSize / 3, gridSize * 2 / 3, gridSize * 2 / 3);
+        g2d.drawOval( (int) (gridSize * xPos - gridSize / 3), (int) (gridSize * yPos - gridSize / 3), (int) (gridSize * 2 / 3), (int) (gridSize * 2 / 3));
     }
 
-    public static void drawTransformer(Graphics g, int gridSize, int xPos, int yPos, boolean selected) {
+    public static void drawTransformer(Graphics g2d, double gridSize, double xPos, double yPos, boolean selected) {
         if (selected) {
-            g.setColor(Preferences.selectedColor);
+            g2d.setColor(Preferences.selectedColor);
         } else {
-            g.setColor(Preferences.componentColor);
+            g2d.setColor(Preferences.componentColor);
         }
 
         //top and bottom horizontal lines on left side
-        g.drawLine((xPos - 1) * gridSize, (yPos + 1) * gridSize, (int) ((xPos - .25) * gridSize), (yPos + 1) * gridSize);
-        g.drawLine((xPos - 1) * gridSize, (yPos - 1) * gridSize, (int) ((xPos - .25) * gridSize), (yPos - 1) * gridSize);
+        g2d.drawLine( (int) ((xPos - 1) * gridSize), (int) ((yPos + 1) * gridSize), (int) ((xPos - .25) * gridSize), (int) ((yPos + 1) * gridSize));
+        g2d.drawLine( (int) ((xPos - 1) * gridSize), (int) ((yPos - 1) * gridSize), (int) ((xPos - .25) * gridSize), (int) ((yPos - 1) * gridSize));
 
         //vertical horizontal lines on left and right side
-        g.drawLine((int) ((xPos + .25) * gridSize), (yPos + 1) * gridSize, (int) ((xPos + .25) * gridSize), (yPos - 1) * gridSize);
-        g.drawLine((int) ((xPos - .25) * gridSize), (yPos + 1) * gridSize, (int) ((xPos - .25) * gridSize), (yPos - 1) * gridSize);
+        g2d.drawLine((int) ((xPos + .25) * gridSize), (int) ((yPos + 1) * gridSize), (int) ((xPos + .25) * gridSize), (int) ((yPos - 1) * gridSize));
+        g2d.drawLine((int) ((xPos - .25) * gridSize), (int) ((yPos + 1) * gridSize), (int) ((xPos - .25) * gridSize), (int) ((yPos - 1) * gridSize));
 
         //top and bottom horizontal lines on right side
-        g.drawLine((xPos + 1) * gridSize, (yPos + 1) * gridSize, (int) ((xPos + .25) * gridSize), (yPos + 1) * gridSize);
-        g.drawLine((xPos + 1) * gridSize, (yPos - 1) * gridSize, (int) ((xPos + .25) * gridSize), (yPos - 1) * gridSize);
+        g2d.drawLine( (int) ((xPos + 1) * gridSize), (int) ((yPos + 1) * gridSize), (int) ((xPos + .25) * gridSize), (int) ((yPos + 1) * gridSize));
+        g2d.drawLine( (int) ((xPos + 1) * gridSize), (int) ((yPos - 1) * gridSize), (int) ((xPos + .25) * gridSize), (int) ((yPos - 1) * gridSize));
 
         //draw some impedence-like symbols to differentiate the transformer a bit
-        g.fillRect((int) ((xPos - .35) * gridSize), (int) ((yPos - .5) * gridSize), (int) (.2 * gridSize), gridSize);
-        g.fillRect((int) ((xPos + .15) * gridSize), (int) ((yPos - .5) * gridSize), (int) (.2 * gridSize), gridSize);
+        g2d.fillRect((int) ((xPos - .35) * gridSize), (int) ((yPos - .5) * gridSize), (int) ((.2 * gridSize)), (int) (gridSize));
+        g2d.fillRect((int) ((xPos + .15) * gridSize), (int) ((yPos - .5) * gridSize), (int) ((.2 * gridSize)), (int) (gridSize));
     }
 
     /**
      * draws the transistor at an x and y position (in CircuiTikz coordinates)
      * to the schematic window, must
      *
-     * @param g graphics object to be drawn onto
+     * @param g2d graphics object to be drawn onto
      * @param gridSize current size of the grid
      * @param xPos x position in circuitikz coordinates
      * @param yPos y position in circuitikz coordinates
@@ -812,42 +815,45 @@ public class Component {
      * terminal and 3 terminal opamps need to be drawn differently. (uses
      * constants defined at the top of Component class)
      */
-    public static void drawOpamp(Graphics g, int gridSize, int xPos, int yPos, boolean selected, int component) {
+    public static void drawOpamp(Graphics g2d, double gridSize, double xPos, double yPos, boolean selected, int component) {
         if (selected) {
-            g.setColor(Preferences.selectedColor);
+            g2d.setColor(Preferences.selectedColor);
         } else {
-            g.setColor(Preferences.componentColor);
+            g2d.setColor(Preferences.componentColor);
         }
 
         Polygon opampBody = new Polygon();
-        opampBody.addPoint(gridSize * (xPos + 2), gridSize * yPos);
-        opampBody.addPoint((int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos - 1.5)));
-        opampBody.addPoint((int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos + 1.5)));
+        opampBody.addPoint( (int) (gridSize * (xPos + 0.8)), (int) (gridSize * (yPos - 0))); // mod, adds 0.5 points
+        opampBody.addPoint((int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos - 1))); // mod
+        opampBody.addPoint((int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos + 1))); // mod
 
-        g.setColor(Preferences.backgroundColor);
-        g.fillPolygon(opampBody);
+        g2d.drawLine( (int) (gridSize * (xPos + 0.8)), (int) (gridSize * (yPos - 0)),  (int) (gridSize * (xPos + 1.2)), (int) (gridSize * (yPos - 0))); // output line
+
+
+        g2d.setColor(Preferences.backgroundColor);
+        g2d.fillPolygon(opampBody);
         if (selected) {
-            g.setColor(Preferences.selectedColor);
+            g2d.setColor(Preferences.selectedColor);
         } else {
-            g.setColor(Preferences.componentColor);
+            g2d.setColor(Preferences.componentColor);
         }
-        g.drawPolygon(opampBody);
+        g2d.drawPolygon(opampBody);
 
         //add terminals
-        g.drawLine((int) (gridSize * (xPos - 3)), (int) (gridSize * (yPos - 1)), (int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos - 1)));
-        g.drawLine((int) (gridSize * (xPos - 3)), (int) (gridSize * (yPos + 1)), (int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos + 1)));
+        g2d.drawLine((int) (gridSize * (xPos - 1.7)), (int) (gridSize * (yPos - 0.5)), (int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos - 0.5))); // mod
+        g2d.drawLine((int) (gridSize * (xPos - 1.7)), (int) (gridSize * (yPos + 0.5)), (int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos + 0.5))); // mod
 
         //finally add the inverting and non-inverting input indicators  
         //inverting indicator
-        g.drawLine((int) (gridSize * (xPos - .4)), (int) (gridSize * (yPos - 1)), (int) (gridSize * (xPos - .8)), (int) (gridSize * (yPos - 1)));
+        g2d.drawLine((int) (gridSize * (xPos - .4)), (int) (gridSize * (yPos - 0.5)), (int) (gridSize * (xPos - .8)), (int) (gridSize * (yPos - 0.5))); // mod
         //non-inverting indicator
-        g.drawLine((int) (gridSize * (xPos - .6)), (int) (gridSize * (yPos + .8)), (int) (gridSize * (xPos - .6)), (int) (gridSize * (yPos + 1.2)));
-        g.drawLine((int) (gridSize * (xPos - .4)), (int) (gridSize * (yPos + 1)), (int) (gridSize * (xPos - .8)), (int) (gridSize * (yPos + 1)));
+        g2d.drawLine((int) (gridSize * (xPos - .6)), (int) (gridSize * (yPos + 0.7)), (int) (gridSize * (xPos - .6)), (int) (gridSize * (yPos + 0.3))); // mod
+        g2d.drawLine((int) (gridSize * (xPos - .4)), (int) (gridSize * (yPos + 0.5)), (int) (gridSize * (xPos - .8)), (int) (gridSize * (yPos + 0.5))); // mod
 
         //have to draw the power supply inputs for 5 terminal opamps 
         if (component == OPAMP_5TERMINAL) {
-            g.fillOval(gridSize * (xPos) - gridSize / 8, gridSize * (yPos - 1) - gridSize / 8, gridSize / 4, gridSize / 4);
-            g.fillOval(gridSize * (xPos) - gridSize / 8, gridSize * (yPos + 1) - gridSize / 8, gridSize / 4, gridSize / 4);
+            g2d.fillOval( (int) (gridSize * (xPos) - gridSize / 8), (int) (gridSize * (yPos - 1) - gridSize / 8), (int) (gridSize / 4), (int) (gridSize / 4));
+            g2d.fillOval( (int) (gridSize * (xPos) - gridSize / 8), (int) (gridSize * (yPos + 1) - gridSize / 8), (int) (gridSize / 4), (int) (gridSize / 4));
         }
 
     }

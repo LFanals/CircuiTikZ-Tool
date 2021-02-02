@@ -7,8 +7,10 @@ package circuitikztool;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D; // added
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.geom.Point2D; // 2D added
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -16,6 +18,8 @@ import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+
 
 /**
  * Circuitmaker is an extension of JPanel which allows for the user to draw
@@ -26,16 +30,21 @@ import javax.swing.JPanel;
  */
 public class CircuitMaker extends JPanel {
 
+    //LaTeX formatting parameters used for generating the final latex output
+    boolean wrapInFigure = true;
+    boolean americanStyleComponents = true;
+    boolean useHMarker = true;
+
     //GRID_SIZE determines the current zoom level of the schematic window, a lower values indicates zooming out and a larger values indicates zooming in
-    static int GRID_SIZE = 50;
+    static double GRID_SIZE = 50;
 
     //current mouse position mapped to the schematic grid
-    int xGridPosition;
-    int yGridPosition;
+    double xGridPosition;
+    double yGridPosition;
 
     //current offset of the origin in the CircuitMaker Panel
-    int x_offset = GRID_SIZE * 5;
-    int y_offset = GRID_SIZE * 5;
+    double x_offset = GRID_SIZE * 5;
+    double y_offset = GRID_SIZE * 5;
 
     //booleans indicating whether or not the user is currently holding down the mouse wheel or the left click respectively
     //these are updated by the mouseListeners implemented in the CircuitMaker Constructor
@@ -49,7 +58,7 @@ public class CircuitMaker extends JPanel {
     private int componentIndexSelected = 0;
 
     //offset of the origin from 0,0 of the draw window, changed when the user pans around the schematic
-    Point originOffset;
+    Point2D originOffset;
 
     /*
         ArrayList storing all components placed by the user
@@ -60,7 +69,8 @@ public class CircuitMaker extends JPanel {
     static int currentTool = Component.PATH;
 
     //when a user starts holding left click the starting coordinates of the cursor are stored here, used at the end to place a component. 
-    private Point wireStart;
+    Point2D wireStart;
+    // private Point2D wireStart;
 
     /**
      * sets the current tool of the CircuitMaker, this is the tool that will be
@@ -98,15 +108,15 @@ public class CircuitMaker extends JPanel {
             @Override
             public void mouseMoved(MouseEvent e) {
                 //user moved mouse so we need to map the cursor to the grid. 
-                xGridPosition = (e.getX() / GRID_SIZE);
-                yGridPosition = (e.getY() / GRID_SIZE);
+                xGridPosition = 0.5 * (Math.round (e.getX() / (GRID_SIZE/2)));
+                yGridPosition = 0.5 * (Math.round (e.getY() / (GRID_SIZE/2)));
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
                 //user moved mouse so we need to map the cursor to the grid. 
-                xGridPosition = (e.getX() / GRID_SIZE);
-                yGridPosition = (e.getY() / GRID_SIZE);
+                xGridPosition = 0.5 * (Math.round (e.getX() / (GRID_SIZE/2)));
+                yGridPosition = 0.5 * (Math.round (e.getY() / (GRID_SIZE/2)));
             }
         }
         );
@@ -120,13 +130,16 @@ public class CircuitMaker extends JPanel {
                         //left click
                         clicking = true;
                         //user holding left click on the CircuitMaker means they're going to be placing a path component, we need to store the starting position of the click (mapped to the grid)
-                        wireStart = new Point(xGridPosition - originOffset.x, yGridPosition - originOffset.y);
+                        wireStart = new Point2D.Double(xGridPosition - originOffset.getX(), yGridPosition - originOffset.getY());
+                        // wireStart = new Point2D.Double(xGridPosition, yGridPosition);
                         break;
                     case MouseEvent.BUTTON2:
                         //center click
                         dragging = true;
 
                         //poll the mouse, we use these values to calculate the panning of the CircuitMaker window. 
+
+
                         lastMouseX = MouseInfo.getPointerInfo().getLocation().x;
                         lastMouseY = MouseInfo.getPointerInfo().getLocation().y;
                         break;
@@ -175,7 +188,7 @@ public class CircuitMaker extends JPanel {
     }
 
     private int getComponentClosestToPointer() {
-        Point position = new Point(xGridPosition - originOffset.x, yGridPosition - originOffset.y);
+        Point2D position = new Point2D.Double(xGridPosition - originOffset.getX(), yGridPosition - originOffset.getY());
 
         double shortestDistance = Double.MAX_VALUE;
         int index = -1;
@@ -185,10 +198,10 @@ public class CircuitMaker extends JPanel {
             double distance = Double.MAX_VALUE;
             if (components.get(a).isPathComponent()) {
                 //find center of line
-                Point center = new Point((components.get(a).wireStart.x + components.get(a).wireEnd.x) / 2, (components.get(a).wireStart.y + components.get(a).wireEnd.y) / 2);
-                distance = Point.distance(center.x, center.y, position.x, position.y);
+                Point2D center = new Point2D.Double((components.get(a).wireStart.getX() + components.get(a).wireEnd.getX()) / 2, (components.get(a).wireStart.getX() + components.get(a).wireEnd.getY()) / 2);
+                distance = Point2D.distance(center.getX(), center.getY(), position.getX(), position.getY());
             } else {
-                distance = Point.distance(components.get(a).getPosition().x, components.get(a).getPosition().y, position.x, position.y);
+                distance = Point2D.distance(components.get(a).getPosition().getX(), components.get(a).getPosition().getY(), position.getX(), position.getY());
             }
             if (distance < shortestDistance) {
                 shortestDistance = distance;
@@ -250,10 +263,10 @@ public class CircuitMaker extends JPanel {
      * that'll be fixed in a later commit if I don't forget about writing this
      * into the official javadoc)
      *
-     * @param g graphics object to be drawn onto
+     * @param g2d graphics object to be drawn onto
      */
-    @Override
-    public void paint(Graphics g) {
+     @Override
+    public void paint(Graphics g2d) {
 
         //first figure out what placed component has already been selected (we need to highlight it so the user can interact with it)
         setSelectedComponentIndex(CircuitikzTool.ui.componentList.getSelectedIndex());
@@ -267,37 +280,37 @@ public class CircuitMaker extends JPanel {
         }
 
         //snap the x and y offset to values of the grid size. this could be made somewhat better with some nicer rounding functions
-        int originOffsetX = (x_offset / GRID_SIZE) * GRID_SIZE;
-        int originOffsetY = (y_offset / GRID_SIZE) * GRID_SIZE;
+        double originOffsetX = ((int) (x_offset / GRID_SIZE)) * GRID_SIZE;
+        double originOffsetY = ((int) (y_offset / GRID_SIZE)) * GRID_SIZE;
 
         //offset of the origin (in terms of Circuitikz coordinates) 
-        originOffset = new Point(x_offset / GRID_SIZE, y_offset / GRID_SIZE);
+        originOffset = new Point2D.Double( (int) (x_offset / GRID_SIZE), (int) (y_offset / GRID_SIZE));
 
         //fill in the background with the background color
-        g.setColor(Preferences.backgroundColor);
-        g.fillRect(0, 0, 10000, 10000);
+        g2d.setColor(Preferences.backgroundColor);
+        g2d.fillRect(0, 0, 10000, 10000);
 
         //if someone hovers over the origin lets make sure they know that its the origin
         if (originOffsetX == xGridPosition * GRID_SIZE && originOffsetY == yGridPosition * GRID_SIZE) {
-            g.setColor(Preferences.gridColor);
-            g.drawString("Origin", originOffsetX - 10, originOffsetY - 5);
+            g2d.setColor(Preferences.gridColor);
+            g2d.drawString("Origin", (int) (originOffsetX - 10), (int) (originOffsetY - 5));
         }
 
         //draw the grid
-        g.setColor(Preferences.gridColor);
-        for (int x = 0; x < this.getWidth(); x += GRID_SIZE) {
-            for (int y = 0; y < this.getHeight(); y += GRID_SIZE) {
-                g.drawLine(x, y, x, y);
+        g2d.setColor(Preferences.gridColor);
+        for (int x = 0; x < this.getWidth(); x += GRID_SIZE/2) {
+            for (int y = 0; y < this.getHeight(); y += GRID_SIZE/2) {
+                g2d.drawLine(x, y, x, y);
             }
         }
 
         //draw origin
-        g.setColor(Preferences.selectedColor);
-        g.fillOval(originOffsetX - 3, originOffsetY - 3, 5, 5);
+        g2d.setColor(Preferences.selectedColor);
+        g2d.fillOval((int) (originOffsetX - 3.0), (int) (originOffsetY - 3.0), 5, 5);
 
         //draw the current mouse position snapped to the grid
-        g.setColor(Preferences.componentColor);
-        g.fillOval(GRID_SIZE * xGridPosition - 3, GRID_SIZE * yGridPosition - 3, 5, 5);
+        g2d.setColor(Preferences.componentColor);
+        g2d.fillOval( (int) (GRID_SIZE * xGridPosition - 3), (int) (GRID_SIZE * yGridPosition - 3), 5, 5);
 
         /*
             if the user is holding down left click we assume that they're attempting to place a component. We need to give them 
@@ -305,38 +318,38 @@ public class CircuitMaker extends JPanel {
         for other components draw the component to the users's mouse position mapped to the grid. 
          */
         if (clicking) {
-            g.setColor(Preferences.componentColor);
+            g2d.setColor(Preferences.componentColor);
 
             //path components just draw a line from start to the current position
             if (Component.isPathComponent(currentTool)) {
-                g.drawLine(
-                        GRID_SIZE * (wireStart.x + originOffset.x),
-                        GRID_SIZE * (wireStart.y + originOffset.y),
-                        GRID_SIZE * xGridPosition,
-                        GRID_SIZE * yGridPosition);
+                g2d.drawLine(
+                        (int) (GRID_SIZE * (wireStart.getX() + originOffset.getX())),
+                        (int) (GRID_SIZE * (wireStart.getY() + originOffset.getY())),
+                        (int) (GRID_SIZE * xGridPosition),
+                        (int) (GRID_SIZE * yGridPosition));
             } else if (currentTool == Component.VCC_NODE) {
                 //for VCC we draw the node at the user's mouse position
-                Component.drawVCCNode(g, GRID_SIZE, xGridPosition, yGridPosition);
+                Component.drawVCCNode(g2d,  (GRID_SIZE), xGridPosition, yGridPosition);
             } else if (currentTool == Component.GROUND_NODE) {
                 //for GND we draw the node at the user's mouse position
-                Component.drawGNDNode(g, GRID_SIZE, xGridPosition, yGridPosition);
+                Component.drawGNDNode(g2d, (GRID_SIZE), xGridPosition, yGridPosition);
             } else if (currentTool == Component.VSS_NODE) {
                 //for VSS we draw the node at the user's mouse position
-                Component.drawVSSNode(g, GRID_SIZE, xGridPosition, yGridPosition);
+                Component.drawVSSNode(g2d, (GRID_SIZE), xGridPosition, yGridPosition);
             } else if (currentTool == Component.OPAMP_3TERMINAL || currentTool == Component.OPAMP_5TERMINAL) {
-                Component.drawOpamp(g, GRID_SIZE, xGridPosition, yGridPosition, false, currentTool);
+                Component.drawOpamp(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false, currentTool);
 
             } else if (currentTool == Component.TRANSFORMER || currentTool == Component.TRANSFORMER_WITH_CORE) {
-                Component.drawTransformer(g, GRID_SIZE, xGridPosition, yGridPosition, false);
+                Component.drawTransformer(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
             } else {
                 //draw the transistor as a preview for the user
-                Component.drawTransistor(g, GRID_SIZE, xGridPosition, yGridPosition, false);
+                Component.drawTransistor(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
             }
         }
 
         //draw all the components currently placed to the CircuitMaker window
         for (int a = 0; a < components.size(); a++) {
-            components.get(a).paint(g, GRID_SIZE, originOffset, a == componentIndexSelected);
+            components.get(a).paint(g2d, (int) (GRID_SIZE), originOffset, a == componentIndexSelected);
         }
     }
 
@@ -403,9 +416,9 @@ public class CircuitMaker extends JPanel {
     public void placeComponent() {
         Component c;
         try {
-            c = new Component(wireStart, new Point(xGridPosition - originOffset.x, yGridPosition - originOffset.y), currentTool);
+            c = new Component(wireStart, new Point2D.Double(xGridPosition - originOffset.getX(), yGridPosition - originOffset.getY()), currentTool);
         } catch (IllegalArgumentException e) {
-            c = new Component(new Point(xGridPosition - originOffset.x, yGridPosition - originOffset.y), currentTool);
+            c = new Component(new Point2D.Double(xGridPosition - originOffset.getX(), yGridPosition - originOffset.getY()), currentTool);
         }
         components.add(c);
         setSelectedComponentIndex(components.size() - 1);
@@ -456,34 +469,30 @@ public class CircuitMaker extends JPanel {
         //if we're going to wrap the circuitikz in a \figure then we need to add that at the beginning
         //most of the user customizations are kind of a mess since they have to be written in the figure in a 
         //specific order. 
-        if (Preferences.getPreference("Wrap in Figure").equals("true")) {
+        if (wrapInFigure) {
             output += "\\begin{figure}";
-            if (Preferences.getPreference("Use [h] annotation").equals("true")) {
-                output += "[h]\n";
+            if (useHMarker) {
+                output += "[H]\n";
             } else {
                 output += "\n";
             }
             output += "\\centering\n";
             output += "\\begin{circuitikz}";
-            if (Preferences.getPreference("American Style Components").equals("true")) {
+            if (americanStyleComponents) {
                 output += "[american]";
             }
             output += "\n";
         } else {
             output += "\\begin{circuitikz}";
-            if (Preferences.getPreference("Use [h] annotation").equals("true") && Preferences.getPreference("American Style Components").equals("true")) {
-                output += "[h, american]\n";
-            } else if (Preferences.getPreference("Use [h] annotation").equals("true") && !Preferences.getPreference("American Style Components").equals("true")) {
-                output += "[h]\n";
-            } else if (!Preferences.getPreference("Use [h] annotation").equals("true") && Preferences.getPreference("American Style Components").equals("true")) {
+            if (useHMarker && americanStyleComponents) {
+                output += "[H, american]\n";
+            } else if (useHMarker && !americanStyleComponents) {
+                output += "[H]\n";
+            } else if (!useHMarker && americanStyleComponents) {
                 output += "[american]\n";
             } else {
                 output += "\n";
             }
-        }
-
-        if (Preferences.getPreference("Smaller Path Components").equals("true")) {
-            output += "\\ctikzset{resistors/scale=0.7, capacitors/scale=0.7, diodes/scale=0.7, inductors/scale=0.7}\n";
         }
 
         //determine whether we have any mosfets in the placed components, if we do then we need to add some extra formatting 
@@ -507,7 +516,8 @@ public class CircuitMaker extends JPanel {
         }
 
         output += "\\end{circuitikz}";
-        if (Preferences.getPreference("Wrap in Figure").equals("true")) {
+        if (wrapInFigure) {
+            output += "\n\\caption{Caption}";
             output += "\n\\end{figure}";
         }
         return output;

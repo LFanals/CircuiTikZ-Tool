@@ -5,7 +5,8 @@
  */
 package circuitikztool;
 
-import com.sun.glass.events.KeyEvent;
+/* import com.sun.glass.events.KeyEvent; */
+import java.awt.event.KeyEvent;
 import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -16,6 +17,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+
+// Clipboard
+import java.awt.datatransfer.StringSelection;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+
 
 /**
  *
@@ -61,6 +68,9 @@ public class GUI extends javax.swing.JFrame {
         componentLabel = new javax.swing.JTextField();
         toolSelector = new javax.swing.JComboBox<>();
         jLabel5 = new javax.swing.JLabel();
+        hCheckbox = new javax.swing.JCheckBox();
+        americanCheckbox = new javax.swing.JCheckBox();
+        wrapFigureCheckbox = new javax.swing.JCheckBox();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         saveOption = new javax.swing.JMenuItem();
@@ -96,6 +106,12 @@ public class GUI extends javax.swing.JFrame {
             schematicWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
+
+        toolSelector.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                toolSelectorKeyPressed(evt);
+            }
+        });
 
         jLabel1.setText("Component String");
 
@@ -179,6 +195,30 @@ public class GUI extends javax.swing.JFrame {
 
         jLabel5.setText("Tool");
 
+        hCheckbox.setSelected(true);
+        hCheckbox.setText("Use [H] Annotation");
+        hCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hCheckboxActionPerformed(evt);
+            }
+        });
+
+        americanCheckbox.setSelected(true);
+        americanCheckbox.setText("American Style Components");
+        americanCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                americanCheckboxActionPerformed(evt);
+            }
+        });
+
+        wrapFigureCheckbox.setSelected(true);
+        wrapFigureCheckbox.setText("Wrap in Figure");
+        wrapFigureCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                wrapFigureCheckboxActionPerformed(evt);
+            }
+        });
+
         jMenu1.setText("File");
 
         saveOption.setText("Save");
@@ -233,17 +273,21 @@ public class GUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(schematicWindow, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel1)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(componentString, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane2)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel4)
-                    .addComponent(componentLabel)
-                    .addComponent(jLabel5)
-                    .addComponent(toolSelector, 0, 171, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel3)
+                        .addComponent(jLabel1)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(componentString, javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jScrollPane2)
+                        .addComponent(jLabel2)
+                        .addComponent(jLabel4)
+                        .addComponent(componentLabel)
+                        .addComponent(jLabel5)
+                        .addComponent(toolSelector, 0, 171, Short.MAX_VALUE))
+                    .addComponent(hCheckbox)
+                    .addComponent(americanCheckbox)
+                    .addComponent(wrapFigureCheckbox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -266,7 +310,13 @@ public class GUI extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(wrapFigureCheckbox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(americanCheckbox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(hCheckbox)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -368,6 +418,12 @@ public class GUI extends javax.swing.JFrame {
         updateComponentList();
     }//GEN-LAST:event_componentListKeyPressed
 
+    // Added 02/02/2021
+    private void toolSelectorKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_componentListKeyPressed
+        keyHandler(evt);
+    }//GEN-LAST:event_componentListKeyPressed
+
+
     private void componentLabelCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_componentLabelCaretUpdate
         schematicWindow.setSelectedComponentLabel(componentLabel.getText());
         updateLatexString(); //since we made a change that affects the latex output we need to update the output window
@@ -389,9 +445,25 @@ public class GUI extends javax.swing.JFrame {
         CircuitMaker.currentTool = toolSelector.getSelectedIndex();
     }//GEN-LAST:event_toolSelectorItemStateChanged
 
+    private void hCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hCheckboxActionPerformed
+        schematicWindow.useHMarker = hCheckbox.isSelected();
+        updateLatexString(); //since we made a change that affects the latex output we need to update the output window
+    }//GEN-LAST:event_hCheckboxActionPerformed
+
+    private void wrapFigureCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wrapFigureCheckboxActionPerformed
+        schematicWindow.wrapInFigure = wrapFigureCheckbox.isSelected();
+        updateLatexString(); //since we made a change that affects the latex output we need to update the output window
+    }//GEN-LAST:event_wrapFigureCheckboxActionPerformed
+
+    private void americanCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_americanCheckboxActionPerformed
+
+        schematicWindow.americanStyleComponents = americanCheckbox.isSelected();
+        updateLatexString(); //since we made a change that affects the latex output we need to update the output window
+    }//GEN-LAST:event_americanCheckboxActionPerformed
+
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
         //just the "about" window, just want there to be some information inside the program itself somewhere.
-        JOptionPane.showMessageDialog(this, "Circuitikz Tool by Matthew James Bellafaire \nProject Github Repo https://github.com/Bellafaire/CircuiTikZ-Tool", "About", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Circuitikz Tool by Matthew James Bellafaire \nProject Github Repo https://github.com/Bellafaire/CircuiTikZ-Tool \n Minor modifications made by Llorenç Fanals Batllori", "About", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     private void outputFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_outputFieldFocusGained
@@ -403,7 +475,7 @@ public class GUI extends javax.swing.JFrame {
 //           LatexStringBuilder w = new LatexStringBuilder(CircuitikzTool.ui, true, components.get(componentIndex));
 //        w.setLocationRelativeTo(null);
 //        w.setVisible(true);
-        PreferencesConfig w = new PreferencesConfig(this, true);
+        preferencesConfig w = new preferencesConfig(this, true);
         w.setLocationRelativeTo(null);
         w.setVisible(true);
     }//GEN-LAST:event_preferencesActionPerformed
@@ -420,17 +492,17 @@ public class GUI extends javax.swing.JFrame {
     }
 
     public void updateTheme() {
-
+        americanCheckbox.setBackground(Preferences.themeBackgroundColor);
         componentLabel.setBackground(Preferences.themeAccent);
         componentList.setBackground(Preferences.themeAccent);
         componentString.setBackground(Preferences.themeAccent);
-
+        hCheckbox.setBackground(Preferences.themeBackgroundColor);
         jLabel1.setBackground(Preferences.themeBackgroundColor);
         jLabel2.setBackground(Preferences.themeBackgroundColor);
         jLabel3.setBackground(Preferences.themeBackgroundColor);
         jLabel4.setBackground(Preferences.themeBackgroundColor);
         jLabel5.setBackground(Preferences.themeBackgroundColor);
-
+        wrapFigureCheckbox.setBackground(Preferences.themeBackgroundColor);
         toolSelector.setBackground(Preferences.themeAccent);
         jMenu1.setBackground(Preferences.themeAccent);
         jMenu2.setBackground(Preferences.themeAccent);
@@ -443,17 +515,17 @@ public class GUI extends javax.swing.JFrame {
         outputField.setBackground(Preferences.themeAccent);
         preferences.setBackground(Preferences.themeAccent);
         saveOption.setBackground(Preferences.themeAccent);
-
+        americanCheckbox.setForeground(Preferences.themeText);
         componentLabel.setForeground(Preferences.themeText);
         componentList.setForeground(Preferences.themeText);
         componentString.setForeground(Preferences.themeText);
-
+        hCheckbox.setForeground(Preferences.themeText);
         jLabel1.setForeground(Preferences.themeText);
         jLabel2.setForeground(Preferences.themeText);
         jLabel3.setForeground(Preferences.themeText);
         jLabel4.setForeground(Preferences.themeText);
         jLabel5.setForeground(Preferences.themeText);
-
+        wrapFigureCheckbox.setForeground(Preferences.themeText);
         toolSelector.setForeground(Preferences.themeText);
         jMenu1.setForeground(Preferences.themeText);
         jMenu2.setForeground(Preferences.themeText);
@@ -466,6 +538,7 @@ public class GUI extends javax.swing.JFrame {
         outputField.setForeground(Preferences.themeText);
         preferences.setForeground(Preferences.themeText);
         saveOption.setForeground(Preferences.themeText);
+
 
     }
 
@@ -491,11 +564,66 @@ public class GUI extends javax.swing.JFrame {
 
     private void keyHandler(java.awt.event.KeyEvent evt) {
         System.out.print("Key pressed ");
-        if (evt.getKeyCode() == KeyEvent.VK_DELETE || evt.getKeyCode() == KeyEvent.VK_BACKSPACE) {
+        if (evt.getKeyCode() == KeyEvent.VK_DELETE ) { /* || evt.getKeyCode() == KeyEvent.VK_BACKSPACE */
             //removing items in this manner causes a bug where the list doesn't update properly since it's controlled in circuitmaker.java
             schematicWindow.deleteSelectedComponent();
             System.out.print("delete");
         }
+        // Added 01/02/2021
+        // https://stackoverflow.com/questions/43952007/java-keylistener-discarding-lower-case-letters
+        else {
+            componentList.requestFocus();
+            switch (evt.getKeyChar()) {
+                case 'w': // wire
+                    toolSelector.setSelectedIndex(0);
+                    break;
+                case 'r': // resistor
+                    toolSelector.setSelectedIndex(1);
+                    break;
+                case 'c': // capacitor
+                    toolSelector.setSelectedIndex(2);
+                    break;
+                case 'l': // inductor
+                    toolSelector.setSelectedIndex(3);
+                    break;
+                case 'd': // diode
+                    toolSelector.setSelectedIndex(4);
+                    break;
+                case 'v': // voltage source
+                    toolSelector.setSelectedIndex(5);
+                    break;
+                case 'i': // current source
+                    toolSelector.setSelectedIndex(6);
+                    break;
+                case 'g': // GND node
+                    toolSelector.setSelectedIndex(7);
+                    break;
+                case 'f': // VCC node
+                    toolSelector.setSelectedIndex(8);
+                    break;
+                case 'n': // NMOS
+                    toolSelector.setSelectedIndex(12);
+                    break;
+                case 'p': // PMOS
+                    toolSelector.setSelectedIndex(13);
+                    break;
+                case 'o': // OpAmp 3 terminals
+                    toolSelector.setSelectedIndex(16);
+                    break;
+                
+                case 'y': // copy current output to clipboard
+                    String myString = schematicWindow.generateLatexString();
+                    StringSelection stringSelection = new StringSelection(myString);
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(stringSelection, null);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        // F Added 01/02/2021
+
         System.out.println("");
     }
 
@@ -514,6 +642,8 @@ public class GUI extends javax.swing.JFrame {
     public void updateLatexString() {
         //update output with the current LaTex string of the circuit
         outputField.setText(schematicWindow.generateLatexString());
+
+
     }
 
     /**
@@ -560,6 +690,7 @@ public class GUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox americanCheckbox;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.ButtonGroup buttonGroup3;
@@ -569,6 +700,7 @@ public class GUI extends javax.swing.JFrame {
     private javax.swing.JTextField componentLabel;
     public javax.swing.JList<String> componentList;
     private javax.swing.JTextField componentString;
+    private javax.swing.JCheckBox hCheckbox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -592,5 +724,6 @@ public class GUI extends javax.swing.JFrame {
     */
     private CircuitMaker schematicWindow;
     private javax.swing.JComboBox<String> toolSelector;
+    private javax.swing.JCheckBox wrapFigureCheckbox;
     // End of variables declaration//GEN-END:variables
 }

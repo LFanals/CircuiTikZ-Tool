@@ -13,12 +13,8 @@ import java.util.logging.Logger;
 //all the important configuration preferences in one place. 
 public class Preferences {
 
-    private static PreferenceOption[] options = {
-        new PreferenceOption("Use Dark Theme", "false", PreferenceOption.BOOLEAN),
-        new PreferenceOption("American Style Components", "true", PreferenceOption.BOOLEAN),
-        new PreferenceOption("Wrap in Figure", "true", PreferenceOption.BOOLEAN),
-        new PreferenceOption("Use [h] annotation", "true", PreferenceOption.BOOLEAN),
-        new PreferenceOption("Smaller Path Components", "false", PreferenceOption.BOOLEAN)
+    private static preferenceOption[] options = {
+        new preferenceOption("Use Dark Theme", "false", preferenceOption.BOOLEAN)
     };
 
     //basically apply changes
@@ -77,7 +73,7 @@ public class Preferences {
      */
     public static Color gridColor = Color.GRAY;
 
-    public static PreferenceOption[] getPreferences() {
+    public static preferenceOption[] getPreferences() {
         return options;
     }
 
@@ -120,7 +116,7 @@ public class Preferences {
 
             //now we track down each option and see how it's been configured
             for (int a = 0; a < options.length; a++) {
-                options[a] = PreferenceOption.parsePreferenceOption(splitData[a]);
+                options[a] = preferenceOption.parsePreferenceOption(splitData[a]);
             }
 
         } catch (IOException ex) {

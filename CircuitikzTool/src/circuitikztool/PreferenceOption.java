@@ -9,7 +9,7 @@ package circuitikztool;
  *
  * @author James
  */
-public class PreferenceOption {
+public class preferenceOption {
 
     String name;
     String value;
@@ -18,7 +18,7 @@ public class PreferenceOption {
     public static final int BOOLEAN = 0;
     public static final int INTEGER = 1;
 
-    public PreferenceOption(String name, String value, int type) {
+    public preferenceOption(String name, String value, int type) {
         this.name = name;
         this.value = value;
     }
@@ -28,12 +28,12 @@ public class PreferenceOption {
         return name + "=" + value + ";\n";
     }
 
-    public static PreferenceOption parsePreferenceOption(String text) {
+    public static preferenceOption parsePreferenceOption(String text) {
         if (text.contains("=") && text.contains(";")) {
             if (text.contains("true") || text.contains("false")) {
-                return new PreferenceOption(text.substring(0, text.indexOf("=")), text.substring(text.indexOf("=") + 1, text.indexOf(";")), BOOLEAN);
+                return new preferenceOption(text.substring(0, text.indexOf("=")), text.substring(text.indexOf("=") + 1, text.indexOf(";")), BOOLEAN);
             } else {
-                return new PreferenceOption(text.substring(0, text.indexOf("=")), text.substring(text.indexOf("=") + 1, text.indexOf(";")), INTEGER);
+                return new preferenceOption(text.substring(0, text.indexOf("=")), text.substring(text.indexOf("=") + 1, text.indexOf(";")), INTEGER);
             }
         } else {
             throw new IllegalArgumentException("preference option does not contain '=' or ';' - cannot be parsed");
