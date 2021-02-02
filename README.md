@@ -34,7 +34,7 @@ Copy output to clipboard shortcut:
 - y
 
 ## TODO: 
-- Add gm-cell and switch devices.
+- Add gm-cell device.
 - Make it possible to draw block diagrams.
 - Add templates.
 

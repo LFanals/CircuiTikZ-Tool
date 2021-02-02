@@ -57,6 +57,8 @@ public class Component {
     final static int VOLTAGE_SOURCE = 5;
     final static int CURRENT_SOURCE = 6;
 
+    final static int SWITCH_NOS = 20; // new components start at index 20
+
     //non-path components
     final static int GROUND_NODE = 7;
     final static int VCC_NODE = 8;
@@ -248,6 +250,12 @@ public class Component {
                 latexParameters = "to[isource,l=$I$]";
                 Label = "I";
                 break;
+
+            case SWITCH_NOS:
+                latexParameters = "to[nos]";
+                Label = "NOS";
+                break;
+                
             default:
                 //this exception is important in isPathComponent();
                 //in the unlikely event that a non-path component some how used this constructor throw an error to alert the nearest code monkey
