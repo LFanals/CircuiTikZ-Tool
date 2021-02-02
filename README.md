@@ -1,5 +1,6 @@
 # CircuiTikZ Tool
 This project is designed to be an open-source tool for creating schematics with CircuiTikz.
+
 This repo is forked from https://github.com/Bellafaire/CircuiTikZ-Tool.
 
 Current grid size: 
@@ -32,15 +33,16 @@ Current grid size:
 Copy output to clipboard shortcut:
 - y
 
-TODO: 
+## TODO: 
 - Add gm-cell and switch devices.
 - Make it possible to draw block diagrams.
 - Add templates.
 
+## Compile project
+A possibility: run \CircuiTikZ-Tool\CircuitikzTool\build.xml in Eclipse IDE. You may need Java JDK.
 
 ## Running CircuiTikZ Tool
-A lot of work still needs to be done before adding a full release to this repo.
-
+Run \CircuiTikZ-Tool\CircuitikzTool\dist\CircuitikzTool.jar file. Make sure to have Java installed in your computer.
 
 ## License
 This project is licensed under the MIT License - see the LICENSE.md file for details
