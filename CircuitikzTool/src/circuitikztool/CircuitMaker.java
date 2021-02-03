@@ -527,4 +527,18 @@ public class CircuitMaker extends JPanel {
         }
         return output;
     }
-}
+
+
+    /**
+     * Erases all placed components, clears LaTeX String and Components list
+     *
+     */
+    public void clearSchematic() {
+        String output = "";
+        components.clear();
+        CircuitikzTool.ui.updateComponentList(); //this is very bad and we shouldn't do it this way but eh whatever, update the UI component list (?)
+    }
+
+
+
+} // End

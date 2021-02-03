@@ -629,6 +629,11 @@ public class GUI extends javax.swing.JFrame {
                     clipboard.setContents(stringSelection, null);
                     break;
 
+                case 'D': // clear schematic, select wire
+                        schematicWindow.clearSchematic();
+                        toolSelector.setSelectedIndex(0);
+                    break;
+
                 default:
                     break;
             }
