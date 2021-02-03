@@ -29,13 +29,17 @@ Current grid size:
 | 3 terminal OpAmp  | o  |
 | 5 terminal OpAmp  |   |
 | Normally Open Switch  | s  |
+| Buffer  | b  |
+| Fully-differential OpAmp  | F  |
+| GM cell  | G  |
 
-
-Copy output to clipboard shortcut:
-- y
+General-purpose keyboard shortcuts:
+| Function  | Keyboard shortcut |
+| ------------- | ------------- |
+| Copy LaTeX string to clipboard  | y  |
+| Clear circuit, components list and LaTeX string  | D  |
 
 ## TODO: 
-- Add gm-cell device.
 - Make it possible to draw block diagrams.
 - Add templates.
 
