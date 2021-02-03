@@ -33,7 +33,8 @@ public class Component {
     //LaTeX doesn't like 3 terminal devices having the same name, we use this variable so that their labels are iterated everytime a new 3 terminal component is placed. 
     private static int TransistorCounter = 1;
     private static int OpAmpCounter = 1;
-    private static int TransformerCount = 1;
+    private static int TransformerCounter = 1;
+    private static int BufferCounter = 1;
 
     //circuitikz requires us to give unique labels to components in order to connect nodes to them
     //for transistors and other multi-terminal devices we need to have a unique ID
@@ -73,6 +74,8 @@ public class Component {
     final static int OPAMP_5TERMINAL = 17;
     final static int TRANSFORMER = 18;
     final static int TRANSFORMER_WITH_CORE = 19;
+
+    final static int BUFFER = 21; // new components start at index 20
 
     //non-component commands used for Latex Component Builder
     final static int DELETE = 1000;
@@ -174,14 +177,20 @@ public class Component {
                 Label = "5-Term Opamp";
                 break;
             case TRANSFORMER:
-                deviceID = TransformerCount++;
+                deviceID = TransformerCounter++;
                 latexParameters = "node[transformer,scale=.952] (T" + deviceID + ") {}";
                 Label = "Transformer";
                 break;
             case TRANSFORMER_WITH_CORE:
-                deviceID = TransformerCount++;
+                deviceID = TransformerCounter++;
                 latexParameters = "node[transformer core,scale=.952] (T" + deviceID + ") {}";
                 Label = "Transformer w/ Core";
+                break;
+
+            case BUFFER:
+                deviceID = BufferCounter++;
+                latexParameters = "node[buffer, scale=1] (buffer" + deviceID + ") {}";
+                Label = "Buffer";
                 break;
 
             default:
@@ -255,7 +264,7 @@ public class Component {
                 latexParameters = "to[nos]";
                 Label = "NOS";
                 break;
-                
+
             default:
                 //this exception is important in isPathComponent();
                 //in the unlikely event that a non-path component some how used this constructor throw an error to alert the nearest code monkey
@@ -399,6 +408,8 @@ public class Component {
             drawVSSNode(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY());
         } else if (componentType == OPAMP_3TERMINAL || componentType == OPAMP_5TERMINAL) {
             drawOpamp(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected, componentType);
+        } else if (componentType == BUFFER) {
+            drawBuffer(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected, componentType);
         } else if (componentType == TRANSFORMER || componentType == TRANSFORMER_WITH_CORE) {
             drawTransformer(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
         } else {
@@ -658,6 +669,11 @@ public class Component {
                     output += "\\draw (opamp" + deviceID + ".+) to[short] (" +  (position.getX() - 3) + "," +  (-1) * (position.getY() + 1) + ");";
 //                    output += "\\draw (opamp" + deviceID + ".out) to[short] (" + (int) (position.getX()) + "," + (int) (-1) * (position.getY()) + ");";
                     break;
+
+                case BUFFER:
+                    // connect a wire to the input terminal:
+                    output += "\n\\draw (buffer" + deviceID + ".in) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY() - 0) + ");\n";
+                    break;
             }
         }
         output += "\n"; //an extra line break to be nice :)
@@ -865,5 +881,50 @@ public class Component {
         }
 
     }
+
+
+    /**
+     * draws the transistor at an x and y position (in CircuiTikz coordinates)
+     * to the schematic window, must
+     *
+     * @param g2d graphics object to be drawn onto
+     * @param gridSize current size of the grid
+     * @param xPos x position in circuitikz coordinates
+     * @param yPos y position in circuitikz coordinates
+     * @param selected boolean indicating whether or not the transistor should
+     * be drawn as a selected component
+     * @param component integer representing the component itself, since 5
+     * terminal and 3 terminal opamps need to be drawn differently. (uses
+     * constants defined at the top of Component class)
+     */
+    public static void drawBuffer(Graphics g2d, double gridSize, double xPos, double yPos, boolean selected, int component) {
+        if (selected) {
+            g2d.setColor(Preferences.selectedColor);
+        } else {
+            g2d.setColor(Preferences.componentColor);
+        }
+
+        Polygon bufferBody = new Polygon();
+        bufferBody.addPoint( (int) (gridSize * (xPos + 0.3)), (int) (gridSize * (yPos - 0))); // mod, adds 0.5 points
+        bufferBody.addPoint((int) (gridSize * (xPos - 0.5)), (int) (gridSize * (yPos - 0.5))); // mod
+        bufferBody.addPoint((int) (gridSize * (xPos - 0.5)), (int) (gridSize * (yPos + 0.5))); // mod
+
+        g2d.drawLine( (int) (gridSize * (xPos + 0.4)), (int) (gridSize * (yPos - 0)),  (int) (gridSize * (xPos + 0.6)), (int) (gridSize * (yPos - 0))); // output line
+
+
+        g2d.setColor(Preferences.backgroundColor);
+        g2d.fillPolygon(bufferBody);
+        if (selected) {
+            g2d.setColor(Preferences.selectedColor);
+        } else {
+            g2d.setColor(Preferences.componentColor);
+        }
+        g2d.drawPolygon(bufferBody);
+
+        //add terminals
+        g2d.drawLine((int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos - 0.0)), (int) (gridSize * (xPos - 0.5)), (int) (gridSize * (yPos - 0.0))); // mod
+
+    }
+
 
 }

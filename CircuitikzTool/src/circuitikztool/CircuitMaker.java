@@ -339,6 +339,9 @@ public class CircuitMaker extends JPanel {
             } else if (currentTool == Component.OPAMP_3TERMINAL || currentTool == Component.OPAMP_5TERMINAL) {
                 Component.drawOpamp(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false, currentTool);
 
+            } else if (currentTool == Component.BUFFER) {
+                Component.drawBuffer(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false, currentTool);
+
             } else if (currentTool == Component.TRANSFORMER || currentTool == Component.TRANSFORMER_WITH_CORE) {
                 Component.drawTransformer(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
             } else {
