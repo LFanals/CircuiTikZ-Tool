@@ -76,6 +76,7 @@ public class Component {
     final static int TRANSFORMER_WITH_CORE = 19;
 
     final static int BUFFER = 21; // new components start at index 20
+    final static int FD_OPAMP = 22; // new components start at index 20
 
     //non-component commands used for Latex Component Builder
     final static int DELETE = 1000;
@@ -191,6 +192,11 @@ public class Component {
                 deviceID = BufferCounter++;
                 latexParameters = "node[buffer, scale=1] (buffer" + deviceID + ") {}";
                 Label = "Buffer";
+                break;
+            case FD_OPAMP:
+                deviceID = OpAmpCounter++;
+                latexParameters = "node[fd op amp, scale=1.19] (opamp" + deviceID + ") {}";
+                Label = "FD OpAmp";
                 break;
 
             default:
@@ -409,7 +415,9 @@ public class Component {
         } else if (componentType == OPAMP_3TERMINAL || componentType == OPAMP_5TERMINAL) {
             drawOpamp(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected, componentType);
         } else if (componentType == BUFFER) {
-            drawBuffer(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected, componentType);
+            drawBuffer(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
+        } else if (componentType == FD_OPAMP) {
+            drawFDOpAmp(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
         } else if (componentType == TRANSFORMER || componentType == TRANSFORMER_WITH_CORE) {
             drawTransformer(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
         } else {
@@ -659,8 +667,8 @@ public class Component {
                     break;
                 case OPAMP_3TERMINAL:
                     //breakout the opamp's terminals to fit with the current grid system:
-                    output += "\n\\draw (opamp" + deviceID + ".-) to[short] (" +  (position.getX() - 1.75) + "," +  (-1) * (position.getY() - 0.5) + ");\n"; // mod
-                    output += "\\draw (opamp" + deviceID + ".+) to[short] (" +  (position.getX() - 1.75) + "," +  (-1) * (position.getY() + 0.5) + ");"; // mod 
+                    output += "\n\\draw (opamp" + deviceID + ".-) to[short] (" +  (position.getX() - 1.5) + "," +  (-1) * (position.getY() - 0.5) + ");\n"; // mod
+                    output += "\\draw (opamp" + deviceID + ".+) to[short] (" +  (position.getX() - 1.5) + "," +  (-1) * (position.getY() + 0.5) + ");"; // mod 
 //                    output += "\\draw (opamp" + deviceID + ".out) to[short] (" + (int) (position.getX() +1 ) + "," + (int) (-1) * (position.getY()) + ");";
                     break;
                 case OPAMP_5TERMINAL:
@@ -673,6 +681,11 @@ public class Component {
                 case BUFFER:
                     // connect a wire to the input terminal:
                     output += "\n\\draw (buffer" + deviceID + ".in) to[short] (" +  (position.getX() - 1) + "," +  (-1) * (position.getY() - 0) + ");\n";
+                    break;
+                case FD_OPAMP:
+                    // connect a wire to the input terminals:
+                    output += "\n\\draw (opamp" + deviceID + ".-) to[short] (" +  (position.getX() - 1.5) + "," +  (-1) * (position.getY() - 0.5) + ");\n";
+                    output += "\\draw (opamp" + deviceID + ".+) to[short] (" +  (position.getX() - 1.5) + "," +  (-1) * (position.getY() + 0.5) + ");";
                     break;
             }
         }
@@ -864,8 +877,8 @@ public class Component {
         g2d.drawPolygon(opampBody);
 
         //add terminals
-        g2d.drawLine((int) (gridSize * (xPos - 1.7)), (int) (gridSize * (yPos - 0.5)), (int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos - 0.5))); // mod
-        g2d.drawLine((int) (gridSize * (xPos - 1.7)), (int) (gridSize * (yPos + 0.5)), (int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos + 0.5))); // mod
+        g2d.drawLine((int) (gridSize * (xPos - 1.5)), (int) (gridSize * (yPos - 0.5)), (int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos - 0.5))); // mod
+        g2d.drawLine((int) (gridSize * (xPos - 1.5)), (int) (gridSize * (yPos + 0.5)), (int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos + 0.5))); // mod
 
         //finally add the inverting and non-inverting input indicators  
         //inverting indicator
@@ -884,20 +897,17 @@ public class Component {
 
 
     /**
-     * draws the transistor at an x and y position (in CircuiTikz coordinates)
+     * draws the buffer at an x and y position (in CircuiTikz coordinates)
      * to the schematic window, must
      *
      * @param g2d graphics object to be drawn onto
      * @param gridSize current size of the grid
      * @param xPos x position in circuitikz coordinates
      * @param yPos y position in circuitikz coordinates
-     * @param selected boolean indicating whether or not the transistor should
+     * @param selected boolean indicating whether or not the buffer should
      * be drawn as a selected component
-     * @param component integer representing the component itself, since 5
-     * terminal and 3 terminal opamps need to be drawn differently. (uses
-     * constants defined at the top of Component class)
      */
-    public static void drawBuffer(Graphics g2d, double gridSize, double xPos, double yPos, boolean selected, int component) {
+    public static void drawBuffer(Graphics g2d, double gridSize, double xPos, double yPos, boolean selected) {
         if (selected) {
             g2d.setColor(Preferences.selectedColor);
         } else {
@@ -909,8 +919,8 @@ public class Component {
         bufferBody.addPoint((int) (gridSize * (xPos - 0.5)), (int) (gridSize * (yPos - 0.5))); // mod
         bufferBody.addPoint((int) (gridSize * (xPos - 0.5)), (int) (gridSize * (yPos + 0.5))); // mod
 
-        g2d.drawLine( (int) (gridSize * (xPos + 0.4)), (int) (gridSize * (yPos - 0)),  (int) (gridSize * (xPos + 0.6)), (int) (gridSize * (yPos - 0))); // output line
-
+        // output line
+        g2d.drawLine( (int) (gridSize * (xPos + 0.4)), (int) (gridSize * (yPos - 0)),  (int) (gridSize * (xPos + 0.6)), (int) (gridSize * (yPos - 0)));
 
         g2d.setColor(Preferences.backgroundColor);
         g2d.fillPolygon(bufferBody);
@@ -921,10 +931,69 @@ public class Component {
         }
         g2d.drawPolygon(bufferBody);
 
-        //add terminals
+        // input line
         g2d.drawLine((int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos - 0.0)), (int) (gridSize * (xPos - 0.5)), (int) (gridSize * (yPos - 0.0))); // mod
 
     }
+
+
+    /**
+     * draws the fully-differential opamp at an x and y position (in CircuiTikz coordinates)
+     * to the schematic window, must
+     *
+     * @param g2d graphics object to be drawn onto
+     * @param gridSize current size of the grid
+     * @param xPos x position in circuitikz coordinates
+     * @param yPos y position in circuitikz coordinates
+     * @param selected boolean indicating whether or not the fd opamp should
+     * be drawn as a selected component
+     */
+    public static void drawFDOpAmp(Graphics g2d, double gridSize, double xPos, double yPos, boolean selected) {
+        if (selected) {
+            g2d.setColor(Preferences.selectedColor);
+        } else {
+            g2d.setColor(Preferences.componentColor);
+        }
+
+        Polygon opampBody = new Polygon();
+        opampBody.addPoint( (int) (gridSize * (xPos + 0.8)), (int) (gridSize * (yPos - 0))); // mod, adds 0.5 points
+        opampBody.addPoint((int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos - 1))); // mod
+        opampBody.addPoint((int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos + 1))); // mod
+
+        // output terminals
+        g2d.drawLine( (int) (gridSize * (xPos - 0.1)), (int) (gridSize * (yPos - 0.5)),  (int) (gridSize * (xPos + 0.75)), (int) (gridSize * (yPos - 0.5)));
+        g2d.drawLine( (int) (gridSize * (xPos - 0.1)), (int) (gridSize * (yPos + 0.5)),  (int) (gridSize * (xPos + 0.75)), (int) (gridSize * (yPos + 0.5)));
+
+        g2d.setColor(Preferences.backgroundColor);
+        g2d.fillPolygon(opampBody);
+        if (selected) {
+            g2d.setColor(Preferences.selectedColor);
+        } else {
+            g2d.setColor(Preferences.componentColor);
+        }
+        g2d.drawPolygon(opampBody);
+
+        //add input terminals
+        g2d.drawLine((int) (gridSize * (xPos - 1.5)), (int) (gridSize * (yPos - 0.5)), (int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos - 0.5))); // mod
+        g2d.drawLine((int) (gridSize * (xPos - 1.5)), (int) (gridSize * (yPos + 0.5)), (int) (gridSize * (xPos - 1)), (int) (gridSize * (yPos + 0.5))); // mod
+
+        //finally add the inverting and non-inverting input indicators  
+        //inverting indicator (-)
+        g2d.drawLine((int) (gridSize * (xPos - .7)), (int) (gridSize * (yPos - 0.5)), (int) (gridSize * (xPos - .9)), (int) (gridSize * (yPos - 0.5))); // mod
+        //non-inverting indicator (+)
+        g2d.drawLine((int) (gridSize * (xPos - .8)), (int) (gridSize * (yPos + 0.6)), (int) (gridSize * (xPos - .8)), (int) (gridSize * (yPos + 0.4))); // mod
+        g2d.drawLine((int) (gridSize * (xPos - .7)), (int) (gridSize * (yPos + 0.5)), (int) (gridSize * (xPos - .9)), (int) (gridSize * (yPos + 0.5))); // mod
+        
+        // add the inverting and non-inverting output indicators  
+        //inverting indicator (-)
+        g2d.drawLine((int) (gridSize * (xPos - .4)), (int) (gridSize * (yPos + 0.4)), (int) (gridSize * (xPos - .2)), (int) (gridSize * (yPos + 0.4))); // mod
+        //non-inverting indicator (+)
+        g2d.drawLine((int) (gridSize * (xPos - .3)), (int) (gridSize * (yPos - 0.5)), (int) (gridSize * (xPos - .3)), (int) (gridSize * (yPos - 0.3))); // mod
+        g2d.drawLine((int) (gridSize * (xPos - .4)), (int) (gridSize * (yPos - 0.4)), (int) (gridSize * (xPos - .2)), (int) (gridSize * (yPos - 0.4))); // mod
+
+
+    }
+
 
 
 }

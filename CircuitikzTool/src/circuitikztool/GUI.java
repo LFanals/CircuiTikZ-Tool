@@ -185,7 +185,7 @@ public class GUI extends javax.swing.JFrame {
             }
         });
 
-        toolSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Path", "Resistor", "Capacitor", "Inductor", "Diode", "Voltage Source", "Current Source", "GND Node", "VCC Node", "VSS Node", "NPN Transistor", "PNP Transistor", "N-Mos", "P-Mos", "N-IGBT", "P-IGBT", "Opamp 3 Terminal", "Opamp 5 Terminal", "Basic Transformer", "Transformer With Core", "NOS", "Buffer" }));
+        toolSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Path", "Resistor", "Capacitor", "Inductor", "Diode", "Voltage Source", "Current Source", "GND Node", "VCC Node", "VSS Node", "NPN Transistor", "PNP Transistor", "N-Mos", "P-Mos", "N-IGBT", "P-IGBT", "Opamp 3 Terminal", "Opamp 5 Terminal", "Basic Transformer", "Transformer With Core", "NOS", "Buffer", "FD OpAmp" }));
         toolSelector.setToolTipText("");
         toolSelector.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -572,7 +572,8 @@ public class GUI extends javax.swing.JFrame {
         // Added 01/02/2021
         // https://stackoverflow.com/questions/43952007/java-keylistener-discarding-lower-case-letters
         else {
-            componentList.requestFocus();
+            // componentList.requestFocus();
+            toolSelector.requestFocus();
             switch (evt.getKeyChar()) {
                 case 'w': // wire
                     toolSelector.setSelectedIndex(0);
@@ -613,6 +614,12 @@ public class GUI extends javax.swing.JFrame {
 
                 case 's': // NOS switch
                     toolSelector.setSelectedIndex(20);
+                    break;
+                case 'b': // buffer
+                    toolSelector.setSelectedIndex(21);
+                    break;
+                case 'F': // FD OpAmp
+                    toolSelector.setSelectedIndex(22);
                     break;
                 
                 case 'y': // copy current output to clipboard
