@@ -62,6 +62,7 @@ public class Component {
 
     final static int SWITCH_NOS = 20; // new components start at index 20
     final static int ARROW = 26;
+    final static int N_ARROW = 27;
 
     //non-path components
     final static int GROUND_NODE = 7;
@@ -294,6 +295,10 @@ public class Component {
             case ARROW:
                 latexParameters = "--";
                 Label = "->";
+                break;
+            case N_ARROW:
+                latexParameters = "-- node[at end, xshift=-0.25cm, yshift=0.25cm] {$-$}";
+                Label = "-> -";
                 break;
 
             default:
@@ -631,7 +636,7 @@ public class Component {
 
         //path components are simple, just insert the label between the start and end position. 
         if (isPathComponent()) {
-            if (componentType == ARROW){
+            if (componentType == ARROW || componentType == N_ARROW){
                 output += "\\draw [->] (";
             } else {
                 output += "\\draw (";
@@ -737,6 +742,12 @@ public class Component {
                     // declare block
                     break;
                 case MIXER:
+                    // declare mixer
+                    break;
+                case ARROW:
+                    // declare mixer
+                    break;
+                case N_ARROW:
                     // declare mixer
                     break;
 
