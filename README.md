@@ -34,6 +34,7 @@ Available components:
 | Block  | B  |
 | Mixer  | M  |
 | Arrow  | W  |
+| Arrow with negative tip  | -  |
 
 General-purpose keyboard shortcuts:
 | Function  | Keyboard shortcut |
