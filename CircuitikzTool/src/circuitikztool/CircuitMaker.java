@@ -345,6 +345,11 @@ public class CircuitMaker extends JPanel {
                 Component.drawFDOpAmp(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
             } else if (currentTool == Component.GM_AMP) {
                 Component.drawGMAmp(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
+            } else if (currentTool == Component.BLOCK) {
+                Component.drawBlock(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
+            } else if (currentTool == Component.MIXER) {
+                Component.drawMixer(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
+
 
             } else if (currentTool == Component.TRANSFORMER || currentTool == Component.TRANSFORMER_WITH_CORE) {
                 Component.drawTransformer(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
@@ -484,11 +489,11 @@ public class CircuitMaker extends JPanel {
                 output += "\n";
             }
             output += "\\centering\n";
-            output += "\\begin{circuitikz}";
+            output += "\\begin{circuitikz}[>=latex']";
             if (americanStyleComponents) {
                 output += "[american]";
             }
-            output += "\n";
+            output += "\n\\tikzstyle{block} = [draw, rectangle, minimum height=1cm, minimum width=2cm]\n";
         } else {
             output += "\\begin{circuitikz}";
             if (useHMarker && americanStyleComponents) {

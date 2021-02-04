@@ -185,7 +185,7 @@ public class GUI extends javax.swing.JFrame {
             }
         });
 
-        toolSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Path", "Resistor", "Capacitor", "Inductor", "Diode", "Voltage Source", "Current Source", "GND Node", "VCC Node", "VSS Node", "NPN Transistor", "PNP Transistor", "N-Mos", "P-Mos", "N-IGBT", "P-IGBT", "Opamp 3 Terminal", "Opamp 5 Terminal", "Basic Transformer", "Transformer With Core", "NOS", "Buffer", "FD OpAmp", "Gm Amp" }));
+        toolSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Path", "Resistor", "Capacitor", "Inductor", "Diode", "Voltage Source", "Current Source", "GND Node", "VCC Node", "VSS Node", "NPN Transistor", "PNP Transistor", "N-Mos", "P-Mos", "N-IGBT", "P-IGBT", "Opamp 3 Terminal", "Opamp 5 Terminal", "Basic Transformer", "Transformer With Core", "NOS", "Buffer", "FD OpAmp", "Gm cell", "Block", "Mixer", "Arrow" }));
         toolSelector.setToolTipText("");
         toolSelector.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -624,7 +624,17 @@ public class GUI extends javax.swing.JFrame {
                 case 'G': // GM Amp
                     toolSelector.setSelectedIndex(23);
                     break;
-                
+
+                case 'B': // Block
+                    toolSelector.setSelectedIndex(24);
+                    break;    
+                case 'M': // Mixer
+                    toolSelector.setSelectedIndex(25);
+                    break; 
+                case 'W': // ArroW
+                    toolSelector.setSelectedIndex(26);
+                    break;   
+
                 case 'y': // copy current output to clipboard
                     String myString = schematicWindow.generateLatexString();
                     StringSelection stringSelection = new StringSelection(myString);
@@ -635,6 +645,7 @@ public class GUI extends javax.swing.JFrame {
                 case 'D': // clear schematic, select wire
                         schematicWindow.clearSchematic();
                         toolSelector.setSelectedIndex(0);
+                        Component.resetStatics();
                     break;
 
                 default:

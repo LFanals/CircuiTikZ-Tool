@@ -1,11 +1,10 @@
-# CircuiTikZ Tool
+# CircuiTikZ-Tool+
 This project is designed to be an open-source tool for creating schematics with CircuiTikz.
-
-This repo is forked from https://github.com/Bellafaire/CircuiTikZ-Tool.
 
 Current grid size: 
 - 0.5 TikZ units.
 
+Available components:
 | Components  | Keyboard shortcut |
 | ------------- | ------------- |
 | Path (wire)  | w  |
@@ -32,6 +31,9 @@ Current grid size:
 | Buffer  | b  |
 | Fully-differential OpAmp  | F  |
 | GM cell  | G  |
+| Block  | B  |
+| Mixer  | M  |
+| Arrow  | W  |
 
 General-purpose keyboard shortcuts:
 | Function  | Keyboard shortcut |
@@ -40,7 +42,7 @@ General-purpose keyboard shortcuts:
 | Clear circuit, components list and LaTeX string  | D  |
 
 ## TODO: 
-- Make it possible to draw block diagrams.
+- Provide info to Arrow on how to add the + and - signs at the tip
 - Add templates.
 
 ## Compile project

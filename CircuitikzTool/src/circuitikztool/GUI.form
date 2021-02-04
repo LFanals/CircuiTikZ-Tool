@@ -287,7 +287,7 @@
     <Component class="javax.swing.JComboBox" name="toolSelector">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="24">
+          <StringArray count="27">
             <StringItem index="0" value="Path"/>
             <StringItem index="1" value="Resistor"/>
             <StringItem index="2" value="Capacitor"/>
@@ -311,7 +311,10 @@
             <StringItem index="20" value="NOS"/>
             <StringItem index="21" value="BUFFER"/>
             <StringItem index="22" value="FD_OPAMP"/>
-            <StringItem index="22" value="GM_AMP"/>
+            <StringItem index="23" value="GM_AMP"/>
+            <StringItem index="24" value="BLOCK"/>
+            <StringItem index="25" value="MIXER"/>
+            <StringItem index="26" value="ARROW"/>
           </StringArray>
         </Property>
         <Property name="toolTipText" type="java.lang.String" value=""/>
