@@ -10,6 +10,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 
+import javax.swing.ImageIcon;
+
 /**
  *
  * @author James
@@ -25,6 +27,7 @@ public class CircuitikzTool extends JFrame {
      *
      */
     static public GUI ui = new GUI();
+
 
     /**
      *
@@ -43,6 +46,10 @@ public class CircuitikzTool extends JFrame {
         ui.setVisible(true);
         ui.setFocusable(true);
         ui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Set icon 
+        ImageIcon logo = new ImageIcon(CircuitikzTool.class.getResource("icon2.png"));
+        ui.setIconImage(logo.getImage());
 
         Preferences.importPreferences();
         Preferences.ConfigPrefrences();

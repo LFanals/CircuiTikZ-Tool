@@ -176,7 +176,7 @@ public class Component {
                 //original template string, however we have to treat them differently in the latex output
                 //and in the drawing
                 deviceID = OpAmpCounter++;
-                latexParameters = "node[op amp,scale=1.19] (opamp" + deviceID + ") {}"; // mod
+                latexParameters = "node[op amp,scale=1.02] (opamp" + deviceID + ") {}"; // mod
                 Label = "3T OpAmp";
                 break;
             case OPAMP_5TERMINAL:
@@ -202,12 +202,12 @@ public class Component {
                 break;
             case FD_OPAMP:
                 deviceID = OpAmpCounter++;
-                latexParameters = "node[fd op amp, scale=1.19] (opamp" + deviceID + ") {}";
+                latexParameters = "node[fd op amp, scale=1.02] (opamp" + deviceID + ") {}";
                 Label = "FD OpAmp";
                 break;
             case GM_AMP:
                 deviceID = OpAmpCounter++;
-                latexParameters = "node[gm amp, scale=1.19] (opamp" + deviceID + ") {}";
+                latexParameters = "node[gm amp, scale=1.02] (opamp" + deviceID + ") {}";
                 Label = "Gm cell";
                 break;
             case BLOCK:
@@ -217,7 +217,7 @@ public class Component {
                 break;
             case MIXER:
                 deviceID = MixerCounter++;
-                latexParameters = "node[mixer, scale=1.19] (mixer" + deviceID + ") {}";
+                latexParameters = "node[mixer, scale=1] (mixer" + deviceID + ") {}";
                 Label = "M";
                 break;
 
@@ -735,7 +735,7 @@ public class Component {
                 case GM_AMP:
                     // connect a wire to the input terminals:
                     output += "\n\\draw (opamp" + deviceID + ".-) to[short] (" +  (position.getX() - 1.5) + "," +  (-1) * (position.getY() - 0.5) + ");\n";
-                    output += "\n\\draw (opamp" + deviceID + ".+) to[short] (" +  (position.getX() - 1.5) + "," +  (-1) * (position.getY() + 0.5) + ");";
+                    output += "\\draw (opamp" + deviceID + ".+) to[short] (" +  (position.getX() - 1.5) + "," +  (-1) * (position.getY() + 0.5) + ");";
                     break;
 
                 case BLOCK:
