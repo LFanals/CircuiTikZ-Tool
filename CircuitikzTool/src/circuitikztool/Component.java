@@ -63,6 +63,7 @@ public class Component {
     final static int SWITCH_NOS = 20; // new components start at index 20
     final static int ARROW = 26;
     final static int N_ARROW = 27;
+    final static int NODE = 28;
 
     //non-path components
     final static int GROUND_NODE = 7;
@@ -218,8 +219,13 @@ public class Component {
             case MIXER:
                 deviceID = MixerCounter++;
                 latexParameters = "node[mixer, scale=1] (mixer" + deviceID + ") {}";
-                Label = "M";
+                Label = "X";
                 break;
+            case NODE:
+                latexParameters = "node[] {$x$}";
+                Label = "x";
+                break;
+            
 
             default:
                 //this exception is important in isPathComponent();
@@ -297,9 +303,10 @@ public class Component {
                 Label = "->";
                 break;
             case N_ARROW:
-                latexParameters = "-- node[at end, xshift=-0.25cm, yshift=0.25cm] {$-$}";
+                latexParameters = "-- node[at end, xshift=0.25cm, yshift=0.25cm] {$-$}";
                 Label = "-> -";
                 break;
+
 
             default:
                 //this exception is important in isPathComponent();
@@ -454,11 +461,12 @@ public class Component {
             drawFDOpAmp(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
         } else if (componentType == GM_AMP) {
             drawGMAmp(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
-    } else if (componentType == BLOCK) {
+        } else if (componentType == BLOCK) {
             drawBlock(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
-    } else if (componentType == MIXER) {
+        } else if (componentType == MIXER) {
             drawMixer(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
-
+        } else if (componentType == NODE) {
+            drawNode(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
         } else if (componentType == TRANSFORMER || componentType == TRANSFORMER_WITH_CORE) {
             drawTransformer(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
         } else {
@@ -653,7 +661,12 @@ public class Component {
             and for the time being this serves most of the functionality at the cost of outputing more code. 
              */
             output += "\\draw (";
-            output +=  position.getX() + "," +  (-1) * (position.getY()) + ") ";
+            if (componentType == NODE){
+                output +=  position.getX() + "," +  (-1) * (position.getY() + 0.3) + ") ";
+            }
+            else {
+                output +=  position.getX() + "," +  (-1) * (position.getY()) + ") ";
+            }
             output += getLatexString() + ";";
 
             switch (componentType) {
@@ -744,12 +757,10 @@ public class Component {
                 case MIXER:
                     // declare mixer
                     break;
-                case ARROW:
+                case NODE:
                     // declare mixer
                     break;
-                case N_ARROW:
-                    // declare mixer
-                    break;
+                
 
             }
         }
@@ -1124,6 +1135,36 @@ public class Component {
         } else {
             g2d.setColor(Preferences.componentColor);
         }
+
+    }
+
+    /**
+     * draws the mixer at an x and y position (in CircuiTikz coordinates)
+     *
+     * @param g2d graphics object to be drawn onto
+     * @param gridSize current size of the grid
+     * @param xPos x position in circuitikz coordinates
+     * @param yPos y position in circuitikz coordinates
+     * @param selected boolean indicating whether or not the fd opamp should
+     * be drawn as a selected component
+     */
+    public static void drawNode(Graphics g2d, double gridSize, double xPos, double yPos, boolean selected) {
+        // g2d.drawOval((int) (gridSize*(xPos - 0.5 + 0.4)), (int) (gridSize*(yPos - 0.5 + 0.0)), (int) gridSize/2, (int) gridSize/2);
+
+        Polygon nodeBody = new Polygon();
+        nodeBody.addPoint( (int) (gridSize * (xPos + 0.2)), (int) (gridSize * (yPos - 0.0))); // mod, adds 0.5 points
+        nodeBody.addPoint( (int) (gridSize * (xPos + 0.2)), (int) (gridSize * (yPos + 0.4))); // mod, adds 0.5 points
+        nodeBody.addPoint((int) (gridSize * (xPos - 0.2)), (int) (gridSize * (yPos + 0.4))); // mod
+        nodeBody.addPoint((int) (gridSize * (xPos - 0.2)), (int) (gridSize * (yPos - 0.0))); // mod
+
+        g2d.setColor(Preferences.backgroundColor);
+        g2d.fillPolygon(nodeBody);
+        if (selected) {
+            g2d.setColor(Preferences.selectedColor);
+        } else {
+            g2d.setColor(Preferences.componentColor);
+        }
+        g2d.drawPolygon(nodeBody);
 
     }
 
