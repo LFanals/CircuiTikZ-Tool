@@ -1,6 +1,8 @@
 # CircuiTikZ-Tool
 This project is designed to be an open-source tool for creating schematics with CircuiTikz.
 
+Brief demo: https://youtu.be/HQ2jeuE46M8
+
 Current grid size: 
 - 0.5 TikZ units.
 
