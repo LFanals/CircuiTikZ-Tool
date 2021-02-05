@@ -1,4 +1,4 @@
-# CircuiTikZ-Tool+
+# CircuiTikZ-Tool
 This project is designed to be an open-source tool for creating schematics with CircuiTikz.
 
 Current grid size: 
@@ -44,7 +44,6 @@ General-purpose keyboard shortcuts:
 | Clear circuit, components list and LaTeX string  | D  |
 
 ## TODO: 
-- Provide info to Arrow on how to add the + and - signs at the tip
 - Add templates.
 
 ## Compile project
