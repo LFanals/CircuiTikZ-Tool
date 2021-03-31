@@ -65,6 +65,8 @@ public class Component {
     final static int N_ARROW = 27;
     final static int NODE = 28;
 
+    final static int IMPEDANCE = 29;
+
     //non-path components
     final static int GROUND_NODE = 7;
     final static int VCC_NODE = 8;
@@ -305,6 +307,10 @@ public class Component {
             case N_ARROW:
                 latexParameters = "-- node[at end, xshift=0.25cm, yshift=0.25cm] {$-$}";
                 Label = "-> -";
+                break;
+            case IMPEDANCE:
+                latexParameters = "to[european resistor,l=$Z$]";
+                Label = "Z";
                 break;
 
 
