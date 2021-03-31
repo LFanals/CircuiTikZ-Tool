@@ -185,7 +185,7 @@ public class GUI extends javax.swing.JFrame {
             }
         });
 
-        toolSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Path", "Resistor", "Capacitor", "Inductor", "Diode", "Voltage Source", "Current Source", "GND Node", "VCC Node", "VSS Node", "NPN Transistor", "PNP Transistor", "N-Mos", "P-Mos", "N-IGBT", "P-IGBT", "Opamp 3 Terminal", "Opamp 5 Terminal", "Basic Transformer", "Transformer With Core", "NOS", "Buffer", "FD OpAmp", "Gm cell", "Block", "Mixer", "ArroW", "Arrow -", "Node" }));
+        toolSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Path (w)", "Resistor (r)", "Capacitor (c)", "Inductor (l)", "Diode (d)", "Voltage Source (v)", "Current Source (i)", "GND Node (g)", "VCC Node (f)", "VSS Node", "NPN Transistor", "PNP Transistor", "N-Mos (n)", "P-Mos (p)", "N-IGBT", "P-IGBT", "Opamp 3 Terminal (o)", "Opamp 5 Terminal", "Basic Transformer", "Transformer With Core", "NOS (s)", "Buffer (b)", "FD OpAmp (F)", "Gm cell (G)", "Block (B)", "Mixer (M)", "ArroW (W)", "Arrow - (-)", "Node (N)" }));
         toolSelector.setToolTipText("");
         toolSelector.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
