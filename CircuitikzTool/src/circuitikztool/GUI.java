@@ -185,7 +185,7 @@ public class GUI extends javax.swing.JFrame {
             }
         });
 
-        toolSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Path (w)", "Resistor (r)", "Capacitor (c)", "Inductor (l)", "Diode (d)", "Voltage Source (v)", "Current Source (i)", "GND Node (g)", "VCC Node (f)", "VSS Node", "NPN Transistor", "PNP Transistor", "N-Mos (n)", "P-Mos (p)", "N-IGBT", "P-IGBT", "Opamp 3 Terminal (o)", "Opamp 5 Terminal", "Basic Transformer", "Transformer With Core", "NOS (s)", "Buffer (b)", "FD OpAmp (F)", "Gm cell (G)", "Block (B)", "Mixer (M)", "ArroW (W)", "Arrow - (-)", "Node (N)", "Impedance (Z)" }));
+        toolSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Path (w)", "Resistor (r)", "Capacitor (c)", "Inductor (l)", "Diode (d)", "Voltage Source (v)", "Current Source (i)", "GND Node (g)", "VCC Node (f)", "VSS Node", "NPN Transistor", "PNP Transistor", "N-Mos (n)", "P-Mos (p)", "N-IGBT", "P-IGBT", "Opamp 3 Terminal (o)", "Opamp 5 Terminal", "Basic Transformer", "Transformer With Core", "NOS (s)", "Buffer (b)", "FD OpAmp (F)", "Gm cell (G)", "Block (B)", "Mixer (M)", "ArroW (W)", "Arrow - (-)", "Node (N)", "Impedance (Z)", "SACDC (A)", "SDCAC (a)" }));
         toolSelector.setToolTipText("");
         toolSelector.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -489,6 +489,8 @@ public class GUI extends javax.swing.JFrame {
         String[] listItems = schematicWindow.getComponentList();
         componentList.setListData(listItems);
         componentList.setSelectedIndex(schematicWindow.getSelectedComponentIndex());
+
+        updateLatexString(); // added
     }
 
     public void updateTheme() {
@@ -564,7 +566,7 @@ public class GUI extends javax.swing.JFrame {
 
     private void keyHandler(java.awt.event.KeyEvent evt) {
         System.out.print("Key pressed ");
-        if (evt.getKeyCode() == KeyEvent.VK_DELETE ) { /* || evt.getKeyCode() == KeyEvent.VK_BACKSPACE */
+        if (evt.getKeyCode() == KeyEvent.VK_DELETE || evt.getKeyCode() == KeyEvent.VK_BACK_SPACE ) { /* || evt.getKeyCode() == KeyEvent.VK_BACKSPACE */
             //removing items in this manner causes a bug where the list doesn't update properly since it's controlled in circuitmaker.java
             schematicWindow.deleteSelectedComponent();
             System.out.print("delete");
@@ -640,10 +642,15 @@ public class GUI extends javax.swing.JFrame {
                 case 'N': // Node label
                     toolSelector.setSelectedIndex(28);
                     break; 
-                case 'Z': // Node label
+                case 'Z': // impedance label
                     toolSelector.setSelectedIndex(29);
                     break;
-
+                case 'A': // SACDC label
+                    toolSelector.setSelectedIndex(30);
+                    break;
+                case 'a': // SDCAC label
+                    toolSelector.setSelectedIndex(31);
+                    break;
                 case 'y': // copy current output to clipboard
                     String myString = schematicWindow.generateLatexString();
                     StringSelection stringSelection = new StringSelection(myString);

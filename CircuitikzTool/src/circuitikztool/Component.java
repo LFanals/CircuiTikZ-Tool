@@ -88,6 +88,9 @@ public class Component {
     final static int BLOCK = 24;
     final static int MIXER = 25;
 
+    final static int SACDC = 30;
+    final static int SDCAC = 31;
+
     //non-component commands used for Latex Component Builder
     final static int DELETE = 1000;
     final static int CANCEL = 1001;
@@ -218,6 +221,18 @@ public class Component {
                 latexParameters = "node[block, scale=1] (block" + deviceID + ") {}";
                 Label = "Block";
                 break;
+
+            case SACDC:
+                deviceID = BlockCounter++;
+                latexParameters = "node[sacdc, scale=1] (block" + deviceID + ") {}";
+                Label = "SACDC";
+                break;
+            case SDCAC:
+                deviceID = BlockCounter++;
+                latexParameters = "node[sdcac, scale=1] (block" + deviceID + ") {}";
+                Label = "SDCAC";
+                break;
+
             case MIXER:
                 deviceID = MixerCounter++;
                 latexParameters = "node[mixer, scale=1] (mixer" + deviceID + ") {}";
@@ -467,7 +482,7 @@ public class Component {
             drawFDOpAmp(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
         } else if (componentType == GM_AMP) {
             drawGMAmp(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
-        } else if (componentType == BLOCK) {
+        } else if (componentType == BLOCK || componentType == SACDC || componentType == SDCAC) {
             drawBlock(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
         } else if (componentType == MIXER) {
             drawMixer(g2d, gridSize, position.getX() + offset.getX(), position.getY() + offset.getY(), selected);
@@ -758,6 +773,12 @@ public class Component {
                     break;
 
                 case BLOCK:
+                    // declare block
+                    break;
+                case SACDC:
+                    // declare block
+                    break;
+                case SDCAC:
                     // declare block
                     break;
                 case MIXER:

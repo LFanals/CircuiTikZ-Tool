@@ -345,7 +345,7 @@ public class CircuitMaker extends JPanel {
                 Component.drawFDOpAmp(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
             } else if (currentTool == Component.GM_AMP) {
                 Component.drawGMAmp(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
-            } else if (currentTool == Component.BLOCK) {
+            } else if (currentTool == Component.BLOCK || currentTool == Component.SACDC || currentTool == Component.SACDC) {
                 Component.drawBlock(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
             } else if (currentTool == Component.MIXER) {
                 Component.drawMixer(g2d, (GRID_SIZE), xGridPosition, yGridPosition, false);
